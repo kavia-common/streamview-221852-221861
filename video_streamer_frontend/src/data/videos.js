@@ -1,75 +1,63 @@
 const videos = [
   // Top 7 (preserve exact ordering)
-  { title: "The Gruffalo – Read Aloud Story", youtubeId: "s8sUPpPc8Ws", thumbnail: "https://i.ytimg.com/vi/s8sUPpPc8Ws/sddefault.jpg", altThumbnail: "https://i.ytimg.com/vi/s8sUPpPc8Ws/hqdefault.jpg", embeddable: true },
-  { title: "Room on the Broom – Read Aloud Story", youtubeId: "cWB0goTWZic", thumbnail: "https://i.ytimg.com/vi/cWB0goTWZic/sddefault.jpg", altThumbnail: "https://i.ytimg.com/vi/cWB0goTWZic/hqdefault.jpg", embeddable: true },
-  { title: "Super Simple – The Itsy Bitsy Spider", youtubeId: "w_lCi8U49mY", thumbnail: "https://i.ytimg.com/vi/w_lCi8U49mY/sddefault.jpg", altThumbnail: "https://i.ytimg.com/vi/w_lCi8U49mY/hqdefault.jpg", embeddable: true },
-  { title: "Super Simple – BINGO", youtubeId: "9mmF8zOlh_g", thumbnail: "https://i.ytimg.com/vi/9mmF8zOlh_g/sddefault.jpg", altThumbnail: "https://i.ytimg.com/vi/9mmF8zOlh_g/hqdefault.jpg", embeddable: true },
-  { title: "Baby Shark Dance", youtubeId: "XqZsoesa55w", thumbnail: "https://i.ytimg.com/vi/XqZsoesa55w/sddefault.jpg", altThumbnail: "https://i.ytimg.com/vi/XqZsoesa55w/hqdefault.jpg", embeddable: true },
-  { title: "Super Simple Songs - Twinkle Twinkle Little Star", youtubeId: "yCjJyiqpAuU", thumbnail: "https://i.ytimg.com/vi/yCjJyiqpAuU/sddefault.jpg", altThumbnail: "https://i.ytimg.com/vi/yCjJyiqpAuU/hqdefault.jpg", embeddable: true },
-  { title: "Masha and the Bear – Recipe for Disaster", youtubeId: "KYniUCGPGLs", thumbnail: "https://i.ytimg.com/vi/KYniUCGPGLs/sddefault.jpg", altThumbnail: "https://i.ytimg.com/vi/KYniUCGPGLs/hqdefault.jpg", embeddable: true },
+  { title: "The Gruffalo – Read Aloud Story", youtubeId: "s8sUPpPc8Ws", thumbnail: "https://i.ytimg.com/vi/s8sUPpPc8Ws/sddefault.jpg", altThumbnail: "https://i.ytimg.com/vi/s8sUPpPc8Ws/hqdefault.jpg", embeddable: true, channelName: "Official", playlistIds: ["storytime","classics"], tags: ["story","kids","read aloud"], description: "A cozy read-aloud of the beloved classic The Gruffalo with gentle narration and clear visuals." },
+  { title: "Room on the Broom – Read Aloud Story", youtubeId: "cWB0goTWZic", thumbnail: "https://i.ytimg.com/vi/cWB0goTWZic/sddefault.jpg", altThumbnail: "https://i.ytimg.com/vi/cWB0goTWZic/hqdefault.jpg", embeddable: true, channelName: "Official", playlistIds: ["storytime","classics"], tags: ["witch","adventure","read aloud"], description: "Join a friendly witch and her pals on a kind-hearted adventure told for young listeners." },
+  { title: "Super Simple – The Itsy Bitsy Spider", youtubeId: "w_lCi8U49mY", thumbnail: "https://i.ytimg.com/vi/w_lCi8U49mY/sddefault.jpg", altThumbnail: "https://i.ytimg.com/vi/w_lCi8U49mY/hqdefault.jpg", embeddable: true, channelName: "Super Simple", playlistIds: ["nursery","learning"], tags: ["song","nursery rhyme"], description: "A calm, clear version of the classic rhyme with simple movements for little ones." },
+  { title: "Super Simple – BINGO", youtubeId: "9mmF8zOlh_g", thumbnail: "https://i.ytimg.com/vi/9mmF8zOlh_g/sddefault.jpg", altThumbnail: "https://i.ytimg.com/vi/9mmF8zOlh_g/hqdefault.jpg", embeddable: true, channelName: "Super Simple", playlistIds: ["nursery"], tags: ["song","letters"], description: "Sing and spell along with B-I-N-G-O in this upbeat nursery favorite." },
+  { title: "Baby Shark Dance", youtubeId: "XqZsoesa55w", thumbnail: "https://i.ytimg.com/vi/XqZsoesa55w/sddefault.jpg", altThumbnail: "https://i.ytimg.com/vi/XqZsoesa55w/hqdefault.jpg", embeddable: true, channelName: "Pinkfong", playlistIds: ["nursery"], tags: ["dance","ocean"], description: "The popular dance-and-sing track with easy moves and playful characters." },
+  { title: "Super Simple Songs - Twinkle Twinkle Little Star", youtubeId: "yCjJyiqpAuU", thumbnail: "https://i.ytimg.com/vi/yCjJyiqpAuU/sddefault.jpg", altThumbnail: "https://i.ytimg.com/vi/yCjJyiqpAuU/hqdefault.jpg", embeddable: true, channelName: "Super Simple", playlistIds: ["nursery","classics"], tags: ["lullaby","calm"], description: "A soothing lullaby rendition with gentle animation for wind-down time." },
+  { title: "Masha and the Bear – Recipe for Disaster", youtubeId: "KYniUCGPGLs", thumbnail: "https://i.ytimg.com/vi/KYniUCGPGLs/sddefault.jpg", altThumbnail: "https://i.ytimg.com/vi/KYniUCGPGLs/hqdefault.jpg", embeddable: true, channelName: "Masha and the Bear", playlistIds: ["classics"], tags: ["cartoon","funny"], description: "Masha cooks up chaos in this lighthearted, family-friendly cartoon short." },
 
-  // Remaining to 30 (official channels; explicit sd/hq thumbnails)
-  // CoComelon - official
-  { title: "CoComelon - The Boo Boo Song", youtubeId: "gG8f2oa4u7s", thumbnail: "https://i.ytimg.com/vi/gG8f2oa4u7s/sddefault.jpg", altThumbnail: "https://i.ytimg.com/vi/gG8f2oa4u7s/hqdefault.jpg", embeddable: true },
-  { title: "CoComelon - Yes Yes Vegetables Song", youtubeId: "ZbZSe6N_BXs", thumbnail: "https://i.ytimg.com/vi/ZbZSe6N_BXs/sddefault.jpg", altThumbnail: "https://i.ytimg.com/vi/ZbZSe6N_BXs/hqdefault.jpg", embeddable: true },
+  // Remaining to 30
+  { title: "CoComelon - The Boo Boo Song", youtubeId: "gG8f2oa4u7s", thumbnail: "https://i.ytimg.com/vi/gG8f2oa4u7s/sddefault.jpg", altThumbnail: "https://i.ytimg.com/vi/gG8f2oa4u7s/hqdefault.jpg", embeddable: true, channelName: "CoComelon", playlistIds: ["learning","nursery"], tags: ["feelings","help"], description: "Teaches care and empathy with simple lyrics and bright visuals." },
+  { title: "CoComelon - Yes Yes Vegetables Song", youtubeId: "ZbZSe6N_BXs", thumbnail: "https://i.ytimg.com/vi/ZbZSe6N_BXs/sddefault.jpg", altThumbnail: "https://i.ytimg.com/vi/ZbZSe6N_BXs/hqdefault.jpg", embeddable: true, channelName: "CoComelon", playlistIds: ["learning"], tags: ["healthy","food"], description: "Encourages trying veggies with catchy music and friendly characters." },
 
-  // Sesame Street - official
-  { title: "Sesame Street: Elmo's Ducks", youtubeId: "9xGzFZl8lJc", thumbnail: "https://i.ytimg.com/vi/9xGzFZl8lJc/sddefault.jpg", altThumbnail: "https://i.ytimg.com/vi/9xGzFZl8lJc/hqdefault.jpg", embeddable: true },
-  { title: "Sesame Street: Elmo's World - Friends", youtubeId: "9hQxTEmxYyA", thumbnail: "https://i.ytimg.com/vi/9hQxTEmxYyA/sddefault.jpg", altThumbnail: "https://i.ytimg.com/vi/9hQxTEmxYyA/hqdefault.jpg", embeddable: true },
+  { title: "Sesame Street: Elmo's Ducks", youtubeId: "9xGzFZl8lJc", thumbnail: "https://i.ytimg.com/vi/9xGzFZl8lJc/sddefault.jpg", altThumbnail: "https://i.ytimg.com/vi/9xGzFZl8lJc/hqdefault.jpg", embeddable: true, channelName: "Sesame Street", playlistIds: ["learning"], tags: ["counting","animals"], description: "Elmo counts and sings along with ducks to introduce numbers." },
+  { title: "Sesame Street: Elmo's World - Friends", youtubeId: "9hQxTEmxYyA", thumbnail: "https://i.ytimg.com/vi/9hQxTEmxYyA/sddefault.jpg", altThumbnail: "https://i.ytimg.com/vi/9hQxTEmxYyA/hqdefault.jpg", embeddable: true, channelName: "Sesame Street", playlistIds: ["learning"], tags: ["friendship","social"], description: "A friendly look at making and being friends." },
 
-  // Peppa Pig - official
-  { title: "Peppa Pig – Bat and Ball (Official)", youtubeId: "y7R_tV1z5eE", thumbnail: "https://i.ytimg.com/vi/y7R_tV1z5eE/sddefault.jpg", altThumbnail: "https://i.ytimg.com/vi/y7R_tV1z5eE/hqdefault.jpg", embeddable: true },
-  { title: "Peppa Pig – Grandpa Pig's Train (Official)", youtubeId: "4K9sE7XW3eQ", thumbnail: "https://i.ytimg.com/vi/4K9sE7XW3eQ/sddefault.jpg", altThumbnail: "https://i.ytimg.com/vi/4K9sE7XW3eQ/hqdefault.jpg", embeddable: true },
+  { title: "Peppa Pig – Bat and Ball (Official)", youtubeId: "y7R_tV1z5eE", thumbnail: "https://i.ytimg.com/vi/y7R_tV1z5eE/sddefault.jpg", altThumbnail: "https://i.ytimg.com/vi/y7R_tV1z5eE/hqdefault.jpg", embeddable: true, channelName: "Peppa Pig - Official", playlistIds: ["classics"], tags: ["family","play"], description: "Peppa and friends enjoy a simple outdoor game with lots of giggles." },
+  { title: "Peppa Pig – Grandpa Pig's Train (Official)", youtubeId: "4K9sE7XW3eQ", thumbnail: "https://i.ytimg.com/vi/4K9sE7XW3eQ/sddefault.jpg", altThumbnail: "https://i.ytimg.com/vi/4K9sE7XW3eQ/hqdefault.jpg", embeddable: true, channelName: "Peppa Pig - Official", playlistIds: ["classics"], tags: ["train","adventure"], description: "All aboard Grandpa Pig’s cheerful train ride." },
 
-  // Bluey - official
-  { title: "Bluey – Featherwand (Clip)", youtubeId: "bKPNuNsQfGk", thumbnail: "https://i.ytimg.com/vi/bKPNuNsQfGk/hqdefault.jpg", altThumbnail: "https://i.ytimg.com/vi/bKPNuNsQfGk/sddefault.jpg", embeddable: true },
-  { title: "Bluey – Dance Mode (Clip)", youtubeId: "B7l6qXh3nJ8", thumbnail: "https://i.ytimg.com/vi/B7l6qXh3nJ8/hqdefault.jpg", altThumbnail: "https://i.ytimg.com/vi/B7l6qXh3nJ8/sddefault.jpg", embeddable: true },
+  { title: "Bluey – Featherwand (Clip)", youtubeId: "bKPNuNsQfGk", thumbnail: "https://i.ytimg.com/vi/bKPNuNsQfGk/hqdefault.jpg", altThumbnail: "https://i.ytimg.com/vi/bKPNuNsQfGk/sddefault.jpg", embeddable: true, channelName: "Bluey", playlistIds: ["classics"], tags: ["imagination","play"], description: "Bluey and Bingo turn everyday moments into magical play." },
+  { title: "Bluey – Dance Mode (Clip)", youtubeId: "B7l6qXh3nJ8", thumbnail: "https://i.ytimg.com/vi/B7l6qXh3nJ8/hqdefault.jpg", altThumbnail: "https://i.ytimg.com/vi/B7l6qXh3nJ8/sddefault.jpg", embeddable: true, channelName: "Bluey", playlistIds: ["classics"], tags: ["dance","family"], description: "The family grooves together in this energetic clip." },
 
-  // PAW Patrol - official
-  { title: "PAW Patrol – Pups Save A Robo Dog (Clip)", youtubeId: "0yQF-6F4w1I", thumbnail: "https://i.ytimg.com/vi/0yQF-6F4w1I/sddefault.jpg", altThumbnail: "https://i.ytimg.com/vi/0yQF-6F4w1I/hqdefault.jpg", embeddable: true },
+  { title: "PAW Patrol – Pups Save A Robo Dog (Clip)", youtubeId: "0yQF-6F4w1I", thumbnail: "https://i.ytimg.com/vi/0yQF-6F4w1I/sddefault.jpg", altThumbnail: "https://i.ytimg.com/vi/0yQF-6F4w1I/hqdefault.jpg", embeddable: true, channelName: "PAW Patrol", playlistIds: ["classics"], tags: ["teamwork","rescue"], description: "The pups team up for a light rescue mission." },
 
-  // PJ Masks - official
-  { title: "PJ Masks – Gekko Saves Christmas (Clip)", youtubeId: "o0u9rW9u7K8", thumbnail: "https://i.ytimg.com/vi/o0u9rW9u7K8/hqdefault.jpg", altThumbnail: "https://i.ytimg.com/vi/o0u9rW9u7K8/sddefault.jpg", embeddable: true },
+  { title: "PJ Masks – Gekko Saves Christmas (Clip)", youtubeId: "o0u9rW9u7K8", thumbnail: "https://i.ytimg.com/vi/o0u9rW9u7K8/hqdefault.jpg", altThumbnail: "https://i.ytimg.com/vi/o0u9rW9u7K8/sddefault.jpg", embeddable: true, channelName: "PJ Masks", playlistIds: ["classics"], tags: ["heroes","adventure"], description: "Gekko helps save the day in this seasonal mini-adventure." },
 
-  // WB Kids - official
-  { title: "Tom and Jerry – Best Pranks (WB Kids)", youtubeId: "w8kZKQH6f6g", thumbnail: "https://i.ytimg.com/vi/w8kZKQH6f6g/hqdefault.jpg", altThumbnail: "https://i.ytimg.com/vi/w8kZKQH6f6g/sddefault.jpg", embeddable: true },
-  { title: "Looney Tunes – Daffy Duck Classics (WB Kids)", youtubeId: "1N2vKk2F8Jw", thumbnail: "https://i.ytimg.com/vi/1N2vKk2F8Jw/hqdefault.jpg", altThumbnail: "https://i.ytimg.com/vi/1N2vKk2F8Jw/sddefault.jpg", embeddable: true },
+  { title: "Tom and Jerry – Best Pranks (WB Kids)", youtubeId: "w8kZKQH6f6g", thumbnail: "https://i.ytimg.com/vi/w8kZKQH6f6g/hqdefault.jpg", altThumbnail: "https://i.ytimg.com/vi/w8kZKQH6f6g/sddefault.jpg", embeddable: true, channelName: "WB Kids", playlistIds: ["classics"], tags: ["slapstick","classic"], description: "Light slapstick humor from the timeless cat-and-mouse duo." },
+  { title: "Looney Tunes – Daffy Duck Classics (WB Kids)", youtubeId: "1N2vKk2F8Jw", thumbnail: "https://i.ytimg.com/vi/1N2vKk2F8Jw/hqdefault.jpg", altThumbnail: "https://i.ytimg.com/vi/1N2vKk2F8Jw/sddefault.jpg", embeddable: true, channelName: "WB Kids", playlistIds: ["classics"], tags: ["cartoon","classic"], description: "A selection of Daffy Duck classic moments trimmed for kids." },
 
-  // Disney Junior - official
-  { title: "Mickey Mouse Clubhouse – Mickey Mousekersize", youtubeId: "9Q5Z2ymlkR4", thumbnail: "https://i.ytimg.com/vi/9Q5Z2ymlkR4/sddefault.jpg", altThumbnail: "https://i.ytimg.com/vi/9Q5Z2ymlkR4/hqdefault.jpg", embeddable: true },
-  { title: "Disney Junior Music – We Got You (Bluey)", youtubeId: "xv7pJkQpZ7o", thumbnail: "https://i.ytimg.com/vi/xv7pJkQpZ7o/hqdefault.jpg", altThumbnail: "https://i.ytimg.com/vi/xv7pJkQpZ7o/sddefault.jpg", embeddable: true },
+  { title: "Mickey Mouse Clubhouse – Mickey Mousekersize", youtubeId: "9Q5Z2ymlkR4", thumbnail: "https://i.ytimg.com/vi/9Q5Z2ymlkR4/sddefault.jpg", altThumbnail: "https://i.ytimg.com/vi/9Q5Z2ymlkR4/hqdefault.jpg", embeddable: true, channelName: "Disney Junior", playlistIds: ["learning","classics"], tags: ["movement","mickey"], description: "Get moving with Mickey in this simple and fun activity clip." },
+  { title: "Disney Junior Music – We Got You (Bluey)", youtubeId: "xv7pJkQpZ7o", thumbnail: "https://i.ytimg.com/vi/xv7pJkQpZ7o/hqdefault.jpg", altThumbnail: "https://i.ytimg.com/vi/xv7pJkQpZ7o/sddefault.jpg", embeddable: true, channelName: "Disney Junior", playlistIds: ["classics"], tags: ["music","family"], description: "A warm, supportive song celebrating family moments." },
 
-  // BabyBus - official
-  { title: "BabyBus – Peekaboo Song", youtubeId: "Y2cN0L6f0pI", thumbnail: "https://i.ytimg.com/vi/Y2cN0L6f0pI/hqdefault.jpg", altThumbnail: "https://i.ytimg.com/vi/Y2cN0L6f0pI/sddefault.jpg", embeddable: true },
-  { title: "BabyBus – Color Train", youtubeId: "7w7xXzW2YtE", thumbnail: "https://i.ytimg.com/vi/7w7xXzW2YtE/hqdefault.jpg", altThumbnail: "https://i.ytimg.com/vi/7w7xXzW2YtE/sddefault.jpg", embeddable: true },
+  { title: "BabyBus – Peekaboo Song", youtubeId: "Y2cN0L6f0pI", thumbnail: "https://i.ytimg.com/vi/Y2cN0L6f0pI/hqdefault.jpg", altThumbnail: "https://i.ytimg.com/vi/Y2cN0L6f0pI/sddefault.jpg", embeddable: true, channelName: "BabyBus", playlistIds: ["nursery"], tags: ["peekaboo","song"], description: "Peekaboo fun with soft visuals and repetitive lyrics." },
+  { title: "BabyBus – Color Train", youtubeId: "7w7xXzW2YtE", thumbnail: "https://i.ytimg.com/vi/7w7xXzW2YtE/hqdefault.jpg", altThumbnail: "https://i.ytimg.com/vi/7w7xXzW2YtE/sddefault.jpg", embeddable: true, channelName: "BabyBus", playlistIds: ["learning","nursery"], tags: ["colors","train"], description: "Learn colors with a friendly train and simple words." },
 
-  // Blippi - official
-  { title: "Blippi – Learn Colors with Balloons", youtubeId: "b2V7YxJfXl0", thumbnail: "https://i.ytimg.com/vi/b2V7YxJfXl0/hqdefault.jpg", altThumbnail: "https://i.ytimg.com/vi/b2V7YxJfXl0/sddefault.jpg", embeddable: true },
-  { title: "Blippi – Garbage Truck", youtubeId: "1NnBq-0s8SY", thumbnail: "https://i.ytimg.com/vi/1NnBq-0s8SY/hqdefault.jpg", altThumbnail: "https://i.ytimg.com/vi/1NnBq-0s8SY/sddefault.jpg", embeddable: true },
+  { title: "Blippi – Learn Colors with Balloons", youtubeId: "b2V7YxJfXl0", thumbnail: "https://i.ytimg.com/vi/b2V7YxJfXl0/hqdefault.jpg", altThumbnail: "https://i.ytimg.com/vi/b2V7YxJfXl0/sddefault.jpg", embeddable: true, channelName: "Blippi", playlistIds: ["learning"], tags: ["colors","learning"], description: "Explore colors through playful balloon activities." },
+  { title: "Blippi – Garbage Truck", youtubeId: "1NnBq-0s8SY", thumbnail: "https://i.ytimg.com/vi/1NnBq-0s8SY/hqdefault.jpg", altThumbnail: "https://i.ytimg.com/vi/1NnBq-0s8SY/sddefault.jpg", embeddable: true, channelName: "Blippi", playlistIds: ["learning"], tags: ["vehicles","explore"], description: "Learn about garbage trucks and how they help keep cities clean." },
 
-  // Aardman - official
-  { title: "Shaun the Sheep – Sheep's Up", youtubeId: "WkK8KcEw3Ts", thumbnail: "https://i.ytimg.com/vi/WkK8KcEw3Ts/hqdefault.jpg", altThumbnail: "https://i.ytimg.com/vi/WkK8KcEw3Ts/sddefault.jpg", embeddable: true },
-  { title: "Timmy Time – Timmy's Plane", youtubeId: "hK3A1bK5QnA", thumbnail: "https://i.ytimg.com/vi/hK3A1bK5QnA/hqdefault.jpg", altThumbnail: "https://i.ytimg.com/vi/hK3A1bK5QnA/sddefault.jpg", embeddable: true },
+  { title: "Shaun the Sheep – Sheep's Up", youtubeId: "WkK8KcEw3Ts", thumbnail: "https://i.ytimg.com/vi/WkK8KcEw3Ts/hqdefault.jpg", altThumbnail: "https://i.ytimg.com/vi/WkK8KcEw3Ts/sddefault.jpg", embeddable: true, channelName: "Aardman", playlistIds: ["classics"], tags: ["stop motion","comedy"], description: "Shaun and flock get into gentle mischief in this short." },
+  { title: "Timmy Time – Timmy's Plane", youtubeId: "hK3A1bK5QnA", thumbnail: "https://i.ytimg.com/vi/hK3A1bK5QnA/hqdefault.jpg", altThumbnail: "https://i.ytimg.com/vi/hK3A1bK5QnA/sddefault.jpg", embeddable: true, channelName: "Aardman", playlistIds: ["classics"], tags: ["preschool","play"], description: "Timmy explores and learns with kind humor for preschoolers." },
 
-  // Oddbods - official
-  { title: "Oddbods – Morning Mayhem", youtubeId: "o3lG0m2yS7E", thumbnail: "https://i.ytimg.com/vi/o3lG0m2yS7E/hqdefault.jpg", altThumbnail: "https://i.ytimg.com/vi/o3lG0m2yS7E/sddefault.jpg", embeddable: true },
-  { title: "Oddbods – The Great Outdoors", youtubeId: "cS8mY3JzDmM", thumbnail: "https://i.ytimg.com/vi/cS8mY3JzDmM/hqdefault.jpg", altThumbnail: "https://i.ytimg.com/vi/cS8mY3JzDmM/sddefault.jpg", embeddable: true },
+  { title: "Oddbods – Morning Mayhem", youtubeId: "o3lG0m2yS7E", thumbnail: "https://i.ytimg.com/vi/o3lG0m2yS7E/hqdefault.jpg", altThumbnail: "https://i.ytimg.com/vi/o3lG0m2yS7E/sddefault.jpg", embeddable: true, channelName: "Oddbods", playlistIds: ["classics"], tags: ["funny","nonverbal"], description: "Silly, expressive characters in a short morning mix-up." },
+  { title: "Oddbods – The Great Outdoors", youtubeId: "cS8mY3JzDmM", thumbnail: "https://i.ytimg.com/vi/cS8mY3JzDmM/hqdefault.jpg", altThumbnail: "https://i.ytimg.com/vi/cS8mY3JzDmM/sddefault.jpg", embeddable: true, channelName: "Oddbods", playlistIds: ["classics"], tags: ["outdoors","fun"], description: "A playful outdoor adventure with the Oddbods crew." },
 
-  // Pocoyo - official
-  { title: "Pocoyo – Camping", youtubeId: "aY1Qp8r3l3g", thumbnail: "https://i.ytimg.com/vi/aY1Qp8r3l3g/hqdefault.jpg", altThumbnail: "https://i.ytimg.com/vi/aY1Qp8r3l3g/sddefault.jpg", embeddable: true },
+  { title: "Pocoyo – Camping", youtubeId: "aY1Qp8r3l3g", thumbnail: "https://i.ytimg.com/vi/aY1Qp8r3l3g/hqdefault.jpg", altThumbnail: "https://i.ytimg.com/vi/aY1Qp8r3l3g/sddefault.jpg", embeddable: true, channelName: "Pocoyo", playlistIds: ["classics"], tags: ["camping","friendship"], description: "Pocoyo and friends camp and learn through gentle humor." },
 
   // --- New MP4 items (Pexels/Pixabay) ---
-  // Note: These are public, kid-safe clips with direct MP4s and stable poster images.
-  // Poster URLs are used in grid and related lists. Attribution is optional and shown subtly on Watch page.
   {
     id: "pexels-toddler-balloons",
     title: "Colorful Balloons in the Park",
     sourceType: "mp4",
-    mp4Url: "https://player.vimeo.com/external/209997415.sd.mp4?s=1d0b3c3d8a5a9f93b33b2c2c1d5b1d0d4f9ba9f6&profile_id=164", // Pexels CDN
+    mp4Url: "https://player.vimeo.com/external/209997415.sd.mp4?s=1d0b3c3d8a5a9f93b33b2c2c1d5b1d0d4f9ba9f6&profile_id=164",
     thumbnail: "https://images.pexels.com/photos/133173/pexels-photo-133173.jpeg?auto=compress&cs=tinysrgb&w=1280&h=720&fit=crop",
     altThumbnail: "https://images.pexels.com/photos/133173/pexels-photo-133173.jpeg?auto=compress&cs=tinysrgb&w=640&h=360&fit=crop",
     duration: "00:22",
-    attribution: "Video by Pexels (public domain-like license)"
+    attribution: "Video by Pexels",
+    playlistIds: ["stock-safe"],
+    tags: ["outdoors","play"],
+    description: "Bright balloons and smiles in a sunny park scene."
   },
   {
     id: "pexels-cute-rabbit",
@@ -79,7 +67,10 @@ const videos = [
     thumbnail: "https://images.pexels.com/photos/33152/pexels-photo.jpg?auto=compress&cs=tinysrgb&w=1280&h=720&fit=crop",
     altThumbnail: "https://images.pexels.com/photos/33152/pexels-photo.jpg?auto=compress&cs=tinysrgb&w=640&h=360&fit=crop",
     duration: "00:18",
-    attribution: "Video by Pexels"
+    attribution: "Video by Pexels",
+    playlistIds: ["stock-safe"],
+    tags: ["animals","nature"],
+    description: "A calm, close look at a rabbit in soft natural light."
   },
   {
     id: "pexels-toy-train",
@@ -89,7 +80,10 @@ const videos = [
     thumbnail: "https://images.pexels.com/photos/163077/pexels-photo-163077.jpeg?auto=compress&cs=tinysrgb&w=1280&h=720&fit=crop",
     altThumbnail: "https://images.pexels.com/photos/163077/pexels-photo-163077.jpeg?auto=compress&cs=tinysrgb&w=640&h=360&fit=crop",
     duration: "00:15",
-    attribution: "Video by Pexels"
+    attribution: "Video by Pexels",
+    playlistIds: ["stock-safe"],
+    tags: ["toys","train"],
+    description: "A wooden toy train glides along tracks—simple and cheerful."
   },
   {
     id: "pexels-bubbles",
@@ -99,7 +93,10 @@ const videos = [
     thumbnail: "https://images.pexels.com/photos/1101670/pexels-photo-1101670.jpeg?auto=compress&cs=tinysrgb&w=1280&h=720&fit=crop",
     altThumbnail: "https://images.pexels.com/photos/1101670/pexels-photo-1101670.jpeg?auto=compress&cs=tinysrgb&w=640&h=360&fit=crop",
     duration: "00:20",
-    attribution: "Video by Pexels"
+    attribution: "Video by Pexels",
+    playlistIds: ["stock-safe"],
+    tags: ["bubbles","outdoors"],
+    description: "Slow-motion bubbles float and shimmer in the sun."
   },
   {
     id: "pixabay-kitten",
@@ -109,7 +106,10 @@ const videos = [
     thumbnail: "https://cdn.pixabay.com/photo/2017/09/25/13/12/cat-2784905_1280.jpg",
     altThumbnail: "https://cdn.pixabay.com/photo/2017/09/25/13/12/cat-2784905_640.jpg",
     duration: "00:10",
-    attribution: "Video by Pixabay"
+    attribution: "Video by Pixabay",
+    playlistIds: ["stock-safe"],
+    tags: ["cat","cute"],
+    description: "A kitten plays and pounces—short, sweet, and gentle."
   },
   {
     id: "pixabay-ducklings",
@@ -119,7 +119,10 @@ const videos = [
     thumbnail: "https://cdn.pixabay.com/photo/2016/04/19/12/56/ducklings-1339192_1280.jpg",
     altThumbnail: "https://cdn.pixabay.com/photo/2016/04/19/12/56/ducklings-1339192_640.jpg",
     duration: "00:12",
-    attribution: "Video by Pixabay"
+    attribution: "Video by Pixabay",
+    playlistIds: ["stock-safe"],
+    tags: ["ducks","nature"],
+    description: "Fuzzy ducklings waddle near water in a calm setting."
   },
   {
     id: "pixabay-puppy",
@@ -129,7 +132,10 @@ const videos = [
     thumbnail: "https://cdn.pixabay.com/photo/2018/01/31/07/16/dog-3126267_1280.jpg",
     altThumbnail: "https://cdn.pixabay.com/photo/2018/01/31/07/16/dog-3126267_640.jpg",
     duration: "00:14",
-    attribution: "Video by Pixabay"
+    attribution: "Video by Pixabay",
+    playlistIds: ["stock-safe"],
+    tags: ["dog","play"],
+    description: "A playful puppy dashes happily across the grass."
   },
   {
     id: "pixabay-butterflies",
@@ -139,7 +145,10 @@ const videos = [
     thumbnail: "https://cdn.pixabay.com/photo/2016/05/07/09/29/butterfly-1372878_1280.jpg",
     altThumbnail: "https://cdn.pixabay.com/photo/2016/05/07/09/29/butterfly-1372878_640.jpg",
     duration: "00:16",
-    attribution: "Video by Pixabay"
+    attribution: "Video by Pixabay",
+    playlistIds: ["stock-safe"],
+    tags: ["butterfly","garden"],
+    description: "Colorful butterflies drift between flowers."
   },
   {
     id: "pexels-building-blocks",
@@ -149,7 +158,10 @@ const videos = [
     thumbnail: "https://images.pexels.com/photos/134064/pexels-photo-134064.jpeg?auto=compress&cs=tinysrgb&w=1280&h=720&fit=crop",
     altThumbnail: "https://images.pexels.com/photos/134064/pexels-photo-134064.jpeg?auto=compress&cs=tinysrgb&w=640&h=360&fit=crop",
     duration: "00:19",
-    attribution: "Video by Pexels"
+    attribution: "Video by Pexels",
+    playlistIds: ["stock-safe"],
+    tags: ["blocks","build"],
+    description: "Stacking blocks and creativity for curious hands."
   },
   {
     id: "pexels-baby-smile",
@@ -159,19 +171,24 @@ const videos = [
     thumbnail: "https://images.pexels.com/photos/879521/pexels-photo-879521.jpeg?auto=compress&cs=tinysrgb&w=1280&h=720&fit=crop",
     altThumbnail: "https://images.pexels.com/photos/879521/pexels-photo-879521.jpeg?auto=compress&cs=tinysrgb&w=640&h=360&fit=crop",
     duration: "00:12",
-    attribution: "Video by Pexels"
+    attribution: "Video by Pexels",
+    playlistIds: ["stock-safe"],
+    tags: ["baby","smile"],
+    description: "A bright, close smile in a gentle, happy moment."
   },
 
   // --- New Vimeo items (unrestricted, embeddable) ---
-  // Each entry includes pinned thumbnails from i.vimeocdn or oEmbed-equivalent images.
   { 
     id: "vimeo-76979871",
     title: "The New Vimeo Player (Official)",
     sourceType: "vimeo",
     vimeoId: "76979871",
-    thumbnail: "https://i.vimeocdn.com/video/452001751-7a0a3f1f1b6b9c9c0e8a9d1cdbb6f9c7a0df3d9a-1280x720.jpg",
-    altThumbnail: "https://i.vimeocdn.com/video/452001751-7a0a3f1f1b6b9c9c0e8a9d1cdbb6f9c7a0df3d9a-640x360.jpg",
-    embeddable: true
+    thumbnail: "https://i.vimeocdn.com/video/452001751-1280x720.jpg",
+    altThumbnail: "https://i.vimeocdn.com/video/452001751-640x360.jpg",
+    embeddable: true,
+    playlistIds: ["vimeo-set"],
+    tags: ["vimeo","player"],
+    description: "A short official overview of Vimeo’s player."
   },
   { 
     id: "vimeo-22439234",
@@ -180,7 +197,10 @@ const videos = [
     vimeoId: "22439234",
     thumbnail: "https://i.vimeocdn.com/video/13693854-1280x720.jpg",
     altThumbnail: "https://i.vimeocdn.com/video/13693854-640x360.jpg",
-    embeddable: true
+    embeddable: true,
+    playlistIds: ["vimeo-set","classics"],
+    tags: ["teaser","animation"],
+    description: "A family-friendly teaser for the open movie classic."
   },
   { 
     id: "vimeo-148751763",
@@ -189,7 +209,10 @@ const videos = [
     vimeoId: "148751763",
     thumbnail: "https://i.vimeocdn.com/video/548628839-1280x720.jpg",
     altThumbnail: "https://i.vimeocdn.com/video/548628839-640x360.jpg",
-    embeddable: true
+    embeddable: true,
+    playlistIds: ["vimeo-set"],
+    tags: ["trailer","short"],
+    description: "Sci‑fi short trailer with light action scenes."
   },
   { 
     id: "vimeo-90509568",
@@ -198,7 +221,10 @@ const videos = [
     vimeoId: "90509568",
     thumbnail: "https://i.vimeocdn.com/video/469343246-1280x720.jpg",
     altThumbnail: "https://i.vimeocdn.com/video/469343246-640x360.jpg",
-    embeddable: true
+    embeddable: true,
+    playlistIds: ["vimeo-set"],
+    tags: ["fantasy","dragon"],
+    description: "A brief fantasy teaser suitable for older kids with guidance."
   },
   { 
     id: "vimeo-188153161",
@@ -207,7 +233,10 @@ const videos = [
     vimeoId: "188153161",
     thumbnail: "https://i.vimeocdn.com/video/602447834-1280x720.jpg",
     altThumbnail: "https://i.vimeocdn.com/video/602447834-640x360.jpg",
-    embeddable: true
+    embeddable: true,
+    playlistIds: ["vimeo-set"],
+    tags: ["surreal","short"],
+    description: "A creative, surreal trailer; preview recommended."
   },
 ];
 

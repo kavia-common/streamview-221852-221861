@@ -8,6 +8,6 @@ test('renders brand in navbar', () => {
       <App />
     </BrowserRouter>
   );
-  const brand = screen.getByText(/StreamView/i);
+  const brand = screen.getByText(/KAVIAStream/i);
   expect(brand).toBeInTheDocument();
 });

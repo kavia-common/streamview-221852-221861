@@ -104,6 +104,13 @@ export default function WatchPage() {
               </div>
             )}
             {video.description && <p style={{ margin: 0 }}>{video.description}</p>}
+            {Array.isArray(video.tags) && video.tags.length > 0 && (
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 8 }}>
+                {video.tags.map((t, idx) => (
+                  <span className="chip" key={`${video.id}-tag-${idx}`} aria-label={`Tag ${t}`}>#{t}</span>
+                ))}
+              </div>
+            )}
           </div>
         </div>
         <aside>

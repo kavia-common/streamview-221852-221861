@@ -8,6 +8,7 @@ body {
 }
 
 a:hover { color: var(--primary); }
+a.btn:hover { color: var(--primary); }
 code {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Courier New',
     monospace;

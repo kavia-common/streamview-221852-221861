@@ -100,10 +100,15 @@ export default function VideoCard({ video, compact = false }) {
         <div className="avatar" aria-hidden />
         <div>
           <div className="title">{video.title}</div>
-          <div className="sub">{video.channel}</div>
-          <div className="sub">
-            {video.views} • {video.uploadedAt}
+          <div className="sub" style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+            <span className="chip" title="Channel or source">{video.channel || 'Channel'}</span>
+            {video.attribution && <span className="chip" title="Attribution">{video.attribution}</span>}
           </div>
+          {(video.description || (video.tags && video.tags.length)) && (
+            <div className="sub" style={{ marginTop: 4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+              {video.description || (Array.isArray(video.tags) ? video.tags.join(', ') : '')}
+            </div>
+          )}
         </div>
       </div>
     </div>

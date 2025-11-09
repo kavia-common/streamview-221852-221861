@@ -1,6 +1,7 @@
 import React, { createContext, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import primaryRaw from '../data/videos';
 import backupRaw from '../data/backupVideos';
+import playlistsSource from '../data/playlists';
 
 /**
  * PUBLIC_INTERFACE
@@ -35,9 +36,13 @@ export const CatalogContext = createContext({
   videos: [],              // curated YouTube set (exactly 30 when ready)
   mixedVideos: [],         // curated YouTube + public MP4 + Vimeo set
   counts: { youtube: 0, mp4: 0, vimeo: 0, total: 0 },
+  playlists: [],           // playlist definitions with counts
+  playlistsMap: {},        // id -> array of items
   ready: false,
   replaceWithBackup: (_id) => {},
   refreshCatalog: () => {},
+  // PUBLIC_INTERFACE
+  getPlaylistItems: (_id) => [],  // returns items by playlist id
 });
 
 // Versioned keys
@@ -67,6 +72,11 @@ function dlog(...args) {
 
 // Helpers: normalize raw dataset items into catalog format
 function normalizeItem(v, idx) {
+  // integrate new fields with backward compatibility
+  const description = v.description || '';
+  const tags = Array.isArray(v.tags) ? v.tags : [];
+  const playlistIds = Array.isArray(v.playlistIds) ? v.playlistIds : [];
+  const channelName = v.channelName || v.channel || 'Official Channel';
   // YouTube item normalization
   const yt = v.youtubeId;
   const url = `https://www.youtube.com/watch?v=${yt}`;
@@ -83,11 +93,13 @@ function normalizeItem(v, idx) {
     sourceType: 'youtube',
     url,
     youtubeId: yt,
-    channel: v.channel || 'Official Channel',
+    channel: channelName,
     views: v.views || '',
     uploadedAt: v.uploadedAt || '',
     duration: v.duration || '',
-    description: v.description || '',
+    description,
+    tags,
+    playlistIds,
     thumbnail: primary,
     altThumbnail: alt,
     embeddable: v.embeddable === true,
@@ -105,11 +117,13 @@ function normalizeVimeoItem(v, idx) {
     sourceType: 'vimeo',
     url: `https://vimeo.com/${id}`,
     vimeoId: id,
-    channel: v.channel || '',
+    channel: v.channelName || v.channel || 'Vimeo',
     views: v.views || '',
     uploadedAt: v.uploadedAt || '',
     duration: v.duration || '',
     description: v.description || '',
+    tags: Array.isArray(v.tags) ? v.tags : [],
+    playlistIds: Array.isArray(v.playlistIds) ? v.playlistIds : [],
     thumbnail: v.thumbnail || v.altThumbnail || '',
     altThumbnail: v.altThumbnail || v.thumbnail || '',
     embeddable: v.embeddable === true,
@@ -128,12 +142,14 @@ function normalizeMp4Item(v, idx) {
     url: v.mp4Url,
     mp4Url: v.mp4Url,
     youtubeId: undefined,
-    channel: v.channel || '',
+    channel: v.channelName || v.channel || 'Public Clip',
     views: v.views || '',
     uploadedAt: v.uploadedAt || '',
     duration: v.duration || '',
     description: v.description || '',
     attribution: v.attribution || '',
+    tags: Array.isArray(v.tags) ? v.tags : [],
+    playlistIds: Array.isArray(v.playlistIds) ? v.playlistIds : [],
     // Respect provided poster thumbnails; no YT fallback here
     thumbnail: v.thumbnail || v.altThumbnail || '',
     altThumbnail: v.altThumbnail || v.thumbnail || '',
@@ -394,8 +410,10 @@ export function CatalogProvider({ children }) {
 
   const [videos, setVideos] = useState([]); // curated 30 YouTube catalog
   const [mixedVideos, setMixedVideos] = useState([]); // curated + mp4 + vimeo
-  const [counts, setCounts] = useState({ youtube: 0, mp4: 0, total: 0 }); // counts (vimeo added on publish)
+  const [counts, setCounts] = useState({ youtube: 0, mp4: 0, vimeo: 0, total: 0 }); // counts
   const [ready, setReady] = useState(false);
+  const [playlists, setPlaylists] = useState(playlistsSource);
+  const [playlistsMap, setPlaylistsMap] = useState({});
   const buildingRef = useRef(false);
 
   // Track latest videos for async replacement logic
@@ -496,7 +514,21 @@ export function CatalogProvider({ children }) {
       const vimeoList = publicVimeo;
       const mixed = [...curated, ...mp4List, ...vimeoList];
       setMixedVideos(mixed);
-      setCounts({ youtube: curated.length, mp4: mp4List.length, vimeo: vimeoList.length, total: mixed.length });
+      const counts = { youtube: curated.length, mp4: mp4List.length, vimeo: vimeoList.length, total: mixed.length };
+      setCounts(counts);
+      // Build playlists map
+      const pmap = {};
+      for (const pl of playlistsSource) pmap[pl.id] = [];
+      for (const item of mixed) {
+        const ids = Array.isArray(item.playlistIds) ? item.playlistIds : [];
+        ids.forEach((pid) => {
+          if (!pmap[pid]) pmap[pid] = [];
+          pmap[pid].push(item);
+        });
+      }
+      setPlaylistsMap(pmap);
+      // Enrich playlists with counts for dashboard
+      setPlaylists(playlistsSource.map((p) => ({ ...p, count: (pmap[p.id] || []).length })));
       setReady(true);
     } else {
       // Never publish partial lists
@@ -620,7 +652,19 @@ export function CatalogProvider({ children }) {
       const vimeoList = publicVimeo;
       const mixed = [...curated, ...mp4List, ...vimeoList];
       setMixedVideos(mixed);
-      setCounts({ youtube: curated.length, mp4: mp4List.length, vimeo: vimeoList.length, total: mixed.length });
+      const counts = { youtube: curated.length, mp4: mp4List.length, vimeo: vimeoList.length, total: mixed.length };
+      setCounts(counts);
+      const pmap = {};
+      for (const pl of playlistsSource) pmap[pl.id] = [];
+      for (const item of mixed) {
+        const ids = Array.isArray(item.playlistIds) ? item.playlistIds : [];
+        ids.forEach((pid) => {
+          if (!pmap[pid]) pmap[pid] = [];
+          pmap[pid].push(item);
+        });
+      }
+      setPlaylistsMap(pmap);
+      setPlaylists(playlistsSource.map((p) => ({ ...p, count: (pmap[p.id] || []).length })));
       setReady(true);
       dlog('verifyAndRepair applied:', { changed, length: curated.length });
     } else {
@@ -717,16 +761,26 @@ export function CatalogProvider({ children }) {
     buildFinal();
   }, [buildFinal]);
 
+  // PUBLIC_INTERFACE
+  const getPlaylistItems = useCallback((pid) => {
+    if (!pid) return [];
+    const list = playlistsMap[pid] || [];
+    return list;
+  }, [playlistsMap]);
+
   const value = useMemo(
     () => ({
       videos,
       mixedVideos,
       counts,
+      playlists,
+      playlistsMap,
       ready,
       replaceWithBackup,
       refreshCatalog,
+      getPlaylistItems,
     }),
-    [videos, mixedVideos, counts, ready, replaceWithBackup, refreshCatalog]
+    [videos, mixedVideos, counts, playlists, playlistsMap, ready, replaceWithBackup, refreshCatalog, getPlaylistItems]
   );
 
   return <CatalogContext.Provider value={value}>{children}</CatalogContext.Provider>;
