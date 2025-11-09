@@ -27,22 +27,19 @@ export function useThumbnail(video, options = {}) {
   const initialCandidates = useMemo(() => {
     if (!video) return [fallback];
 
-    const candidates = [];
-
-    // Try explicit thumbnail override first
-    if (video.thumbnail && typeof video.thumbnail === 'string') {
-      candidates.push(video.thumbnail);
+    // If a thumbnail is explicitly provided, use it immediately and bypass further cascading.
+    if (video && typeof video.thumbnail === 'string' && video.thumbnail.trim().length > 0) {
+      return [video.thumbnail, fallback];
     }
+
+    const candidates = [];
 
     if (video.sourceType === 'youtube') {
       const ytId = video.youtubeId || video.videoId || extractYouTubeId(video.url);
-      // Prefer sddefault/hqdefault over maxres if maxres is known to be grey sometimes.
-      // We'll still include maxres but later in order for speed/reliability.
       const ordered = [
-        // Some channels have stable sd/hq while maxres can be greyscale; prioritize sd/hq
+        // Prefer sd/hq for reliability; avoid maxres first
         `https://i.ytimg.com/vi/${ytId}/sddefault.jpg`,
         `https://i.ytimg.com/vi/${ytId}/hqdefault.jpg`,
-        `https://i.ytimg.com/vi/${ytId}/maxresdefault.jpg`,
         `https://i.ytimg.com/vi/${ytId}/mqdefault.jpg`,
         `https://i.ytimg.com/vi/${ytId}/default.jpg`,
       ];

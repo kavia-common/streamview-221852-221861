@@ -1,4 +1,4 @@
-import React, { useContext, useMemo } from 'react';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import VideoPlayer from '../components/VideoPlayer';
 import videosRaw from '../data/videos';
@@ -19,6 +19,23 @@ export default function WatchPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { setShowMini } = useContext(PlayerContext);
+  const [embedOkMap, setEmbedOkMap] = useState({});
+
+  const readEmbedCache = (vid) => {
+    try {
+      const raw = localStorage.getItem(`sv:oembed:${vid}`);
+      if (!raw) return null;
+      const obj = JSON.parse(raw);
+      if (!obj || !obj.ok || !obj.exp) return null;
+      if (Date.now() > obj.exp) {
+        localStorage.removeItem(`sv:oembed:${vid}`);
+        return null;
+      }
+      return obj.ok === true;
+    } catch {
+      return null;
+    }
+  };
 
   // Normalize dataset
   const normalized = useMemo(() => {
@@ -35,27 +52,43 @@ export default function WatchPage() {
       duration: v.duration || '',
       description: v.description || '',
       thumbnail: v.thumbnail,
+      embeddable: v.embeddable === true,
     }));
   }, []);
 
-  const video = useMemo(() => normalized.find((v) => v.id === id) || null, [normalized, id]);
+  // Preflight availability (re-use cache values written from Home, or probe here if missing)
+  useEffect(() => {
+    const map = {};
+    for (const v of normalized) {
+      const res = readEmbedCache(v.youtubeId);
+      if (res !== null) map[v.youtubeId] = res;
+    }
+    setEmbedOkMap(map);
+  }, [normalized]);
 
-  const ytOnly = normalized;
+  // Filter embeddable items for list and related
+  const list = useMemo(() => {
+    return normalized.filter((v) => v.sourceType === 'youtube' && v.embeddable !== false)
+      .filter((v) => embedOkMap[v.youtubeId] !== false);
+  }, [normalized, embedOkMap]);
+
+  const video = useMemo(() => list.find((v) => v.id === id) || null, [list, id]);
+
   const { nextItem } = useMemo(() => {
-    const idx = ytOnly.findIndex((v) => v.id === id);
-    const next = idx >= 0 && idx + 1 < ytOnly.length ? ytOnly[idx + 1] : null;
+    const idx = list.findIndex((v) => v.id === id);
+    const next = idx >= 0 && idx + 1 < list.length ? list[idx + 1] : null;
     return { nextItem: next };
-  }, [id, ytOnly]);
+  }, [id, list]);
 
   const related = useMemo(() => {
-    const rest = ytOnly.filter((v) => v.id !== id);
+    const rest = list.filter((v) => v.id !== id);
     return rest.slice(0, 10);
-  }, [id, ytOnly]);
+  }, [id, list]);
 
   if (!video || video.sourceType !== 'youtube') {
     return (
       <div className="container">
-        <p>Video not found or unsupported. Only YouTube videos are available.</p>
+        <p>Video not found or unavailable to embed.</p>
         <Link to="/">Go Home</Link>
       </div>
     );
