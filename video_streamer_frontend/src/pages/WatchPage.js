@@ -9,10 +9,10 @@ import { PlayerContext } from '../context/PlayerContext';
 /**
  * PUBLIC_INTERFACE
  * WatchPage renders the selected video, metadata, and a related list.
- * It also:
  * - Computes the ordered playlist from the curated set and current index
  * - Handles autoplay-next navigation with a countdown overlay via VideoPlayer
  * - Shows a scroll-docked mini-player when the main player leaves the viewport
+ * - Mobile-first: player and related list stack; mini-player docks on small screens
  */
 export default function WatchPage() {
   const { id } = useParams();
@@ -21,23 +21,22 @@ export default function WatchPage() {
   const { setShowMini } = useContext(PlayerContext);
   const video = getVideoById(id);
 
-  // Compute playlist and next/prev indices
-  const { ordered, currentIndex, nextItem } = useMemo(() => {
-    const orderedList = videos.slice(); // already curated order
-    const idx = orderedList.findIndex((v) => v.id === id);
-    const next = idx >= 0 && idx + 1 < orderedList.length ? orderedList[idx + 1] : null;
-    return { ordered: orderedList, currentIndex: idx, nextItem: next };
-  }, [id]);
+  const ytOnly = useMemo(() => videos.filter((v) => v.sourceType === 'youtube'), []);
+  const { nextItem } = useMemo(() => {
+    const idx = ytOnly.findIndex((v) => v.id === id);
+    const next = idx >= 0 && idx + 1 < ytOnly.length ? ytOnly[idx + 1] : null;
+    return { nextItem: next };
+  }, [id, ytOnly]);
 
   const related = useMemo(() => {
-    const rest = videos.filter((v) => v.id !== id);
-    return rest.slice(0, 8);
-  }, [id]);
+    const rest = ytOnly.filter((v) => v.id !== id);
+    return rest.slice(0, 10);
+  }, [id, ytOnly]);
 
-  if (!video) {
+  if (!video || video.sourceType !== 'youtube') {
     return (
       <div className="container">
-        <p>Video not found.</p>
+        <p>Video not found or unsupported. Only YouTube videos are available.</p>
         <Link to="/">Go Home</Link>
       </div>
     );
@@ -46,17 +45,14 @@ export default function WatchPage() {
   const handleEnded = () => {
     if (nextItem) {
       navigate(`/watch/${nextItem.id}`);
-      // after navigation, hide mini until intersection updates again
       setShowMini(false);
     }
   };
 
   const onIntersectChange = (isVisible) => {
-    // If user scrolled back to main player, hide mini
     if (isVisible) setShowMini(false);
   };
 
-  // Determine initial autoplay intent from route state or query param
   const shouldAutoplay = (() => {
     const stateFlag = location?.state && (location.state.autoplay === true || location.state.autoplay === 1);
     const searchParams = new URLSearchParams(location.search || '');
@@ -64,7 +60,6 @@ export default function WatchPage() {
     return !!(stateFlag || queryFlag);
   })();
 
-  // Pass a ref to VideoPlayer's video element for mp4 to control from MiniPlayer
   const playerProps = {
     video,
     onEnded: handleEnded,
@@ -79,7 +74,6 @@ export default function WatchPage() {
         <button
           className="btn-secondary back-btn"
           onClick={() => {
-            // Navigate back if possible, else go home
             if (window.history.length > 1) {
               navigate(-1);
             } else {
@@ -118,17 +112,14 @@ export default function WatchPage() {
         </aside>
       </div>
 
-      {/* Mini player: clicking scrolls back to main player */}
       <MiniPlayer
         video={video}
-        isMp4={video.sourceType === 'mp4'}
+        isMp4={false}
         onClick={() => {
-          // Scroll to top of the main player
           const el = document.querySelector('.player-wrap');
           if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }}
         onClose={() => {
-          // Hide until the main player is back in view (IntersectionObserver will re-open)
           setShowMini(false);
         }}
       />

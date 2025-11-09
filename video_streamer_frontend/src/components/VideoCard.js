@@ -1,20 +1,33 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useThumbnail } from '../utils/useThumbnail';
 
 /**
  * PUBLIC_INTERFACE
  * VideoCard displays a video's thumbnail, title and meta; clicking navigates to watch page.
+ * - Mobile-first responsive card with hover/press animations
+ * - Thumbnails lazy-load with async decoding and robust cascade
+ * - Accessibility: alt text and keyboard navigation
  */
 export default function VideoCard({ video, compact = false }) {
   const navigate = useNavigate();
-  // Always indicate autoplay intent when navigating from cards (Home or Related)
   const onClick = () => navigate(`/watch/${video.id}?autoplay=1`, { state: { autoplay: true } });
 
-  // Async thumbnail resolver with fallback (no blur-up)
   const { url, loaded, isResolving, onError, onLoad } = useThumbnail(video, {
     fallback: '/assets/thumbnail-fallback.jpg',
   });
+
+  useEffect(() => {
+    // Hint connection for image host to improve LCP
+    const pre = document.createElement('link');
+    pre.rel = 'preconnect';
+    pre.href = 'https://i.ytimg.com';
+    pre.crossOrigin = 'anonymous';
+    document.head.appendChild(pre);
+    return () => {
+      try { document.head.removeChild(pre); } catch {}
+    };
+  }, []);
 
   const Img = (
     <img
@@ -22,7 +35,8 @@ export default function VideoCard({ video, compact = false }) {
       alt={`${video.title} thumbnail`}
       onError={onError}
       onLoad={onLoad}
-      // No blur or transitional scaling — render crisp immediately
+      loading="lazy"
+      decoding="async"
       style={{
         background:
           'linear-gradient(135deg, rgba(0,0,0,0.06), rgba(0,0,0,0.02))',
@@ -33,7 +47,7 @@ export default function VideoCard({ video, compact = false }) {
   if (compact) {
     return (
       <div
-        className="related-item"
+        className="related-item card-interactive"
         role="button"
         onClick={onClick}
         onKeyDown={(e) => e.key === 'Enter' && onClick()}
@@ -58,7 +72,7 @@ export default function VideoCard({ video, compact = false }) {
 
   return (
     <div
-      className="card"
+      className="card card-interactive"
       role="button"
       onClick={onClick}
       onKeyDown={(e) => e.key === 'Enter' && onClick()}

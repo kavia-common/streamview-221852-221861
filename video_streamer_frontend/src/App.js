@@ -14,6 +14,24 @@ function App() {
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
+    // Performance: preconnect to YouTube hosts
+    const links = [
+      { href: 'https://www.youtube.com' },
+      { href: 'https://i.ytimg.com' },
+      { href: 'https://s.ytimg.com' },
+    ].map(({ href }) => {
+      const l = document.createElement('link');
+      l.rel = 'preconnect';
+      l.href = href;
+      l.crossOrigin = 'anonymous';
+      document.head.appendChild(l);
+      return l;
+    });
+    return () => {
+      links.forEach((l) => {
+        try { document.head.removeChild(l); } catch {}
+      });
+    };
   }, [theme]);
 
   const onSearchSubmit = (e) => {
@@ -30,13 +48,13 @@ function App() {
         </div>
 
         <form className="search" onSubmit={onSearchSubmit} role="search" aria-label="Search">
-          <input placeholder="Search" />
-          <button type="submit">Search</button>
+          <input placeholder="Search videos" aria-label="Search videos" />
+          <button type="submit" aria-label="Submit search">Search</button>
         </form>
 
         <div className="actions">
           <Link to="/" className="btn" aria-label="Home">Home</Link>
-          <a className="btn" href="https://reactjs.org" target="_blank" rel="noreferrer">Docs</a>
+          <a className="btn" href="https://reactjs.org" target="_blank" rel="noreferrer" aria-label="Open React docs">Docs</a>
         </div>
       </nav>
 
