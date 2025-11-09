@@ -7,7 +7,7 @@ import VideoCard from './VideoCard';
  * Only YouTube items are shown (safety filter).
  */
 export default function VideoGrid({ items }) {
-  const list = Array.isArray(items) ? items.filter((v) => v?.sourceType === 'youtube') : [];
+  const list = Array.isArray(items) ? items.filter((v) => !v || v.sourceType === 'youtube') : [];
   return (
     <div className="grid" role="list">
       {list.map((v) => (

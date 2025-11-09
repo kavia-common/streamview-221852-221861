@@ -24,7 +24,7 @@ export default function MiniPlayer({ video, onClick, onClose }) {
 
   useEffect(() => {
     setPendingBlocked(false);
-  }, [providerType, video?.id]);
+  }, [providerType, video && (video.id || video.youtubeId)]);
 
   const iframeData = useMemo(() => {
     if (!video) return null;
@@ -43,7 +43,7 @@ export default function MiniPlayer({ video, onClick, onClose }) {
       };
     }
     return null;
-  }, [video]);
+  }, [video && (video.youtubeId || video.id)]);
 
   if (!showMini) return null;
 

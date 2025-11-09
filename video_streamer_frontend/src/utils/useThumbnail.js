@@ -22,7 +22,7 @@ export function useThumbnail(video, options = {}) {
     if (!video) return null;
     const id = video.id || video.youtubeId || extractYouTubeId(video?.url);
     return id ? String(id) : null;
-  }, [video]);
+  }, [video && (video.id || video.youtubeId || video.url)]);
 
   const initialCandidates = useMemo(() => {
     if (!video) return [fallback];

@@ -1,7 +1,7 @@
 import React, { useContext, useMemo } from 'react';
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import VideoPlayer from '../components/VideoPlayer';
-import { getVideoById, videos } from '../data/videos';
+import videosRaw from '../data/videos';
 import VideoCard from '../components/VideoCard';
 import MiniPlayer from '../components/MiniPlayer';
 import { PlayerContext } from '../context/PlayerContext';
@@ -19,9 +19,28 @@ export default function WatchPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { setShowMini } = useContext(PlayerContext);
-  const video = getVideoById(id);
 
-  const ytOnly = useMemo(() => videos.filter((v) => v.sourceType === 'youtube'), []);
+  // Normalize dataset
+  const normalized = useMemo(() => {
+    if (!Array.isArray(videosRaw)) return [];
+    return videosRaw.map((v, idx) => ({
+      id: v.youtubeId || String(idx),
+      title: v.title,
+      sourceType: 'youtube',
+      url: v.youtubeId ? `https://www.youtube.com/watch?v=${v.youtubeId}` : undefined,
+      youtubeId: v.youtubeId,
+      channel: v.channel || 'Official Channel',
+      views: v.views || '',
+      uploadedAt: v.uploadedAt || '',
+      duration: v.duration || '',
+      description: v.description || '',
+      thumbnail: v.thumbnail,
+    }));
+  }, []);
+
+  const video = useMemo(() => normalized.find((v) => v.id === id) || null, [normalized, id]);
+
+  const ytOnly = normalized;
   const { nextItem } = useMemo(() => {
     const idx = ytOnly.findIndex((v) => v.id === id);
     const next = idx >= 0 && idx + 1 < ytOnly.length ? ytOnly[idx + 1] : null;

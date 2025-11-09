@@ -58,7 +58,7 @@ export default function VideoPlayer({ video, onEnded, onIntersectChange, nextVid
 
   // build YouTube embed params and url
   const embed = useMemo(() => {
-    const id = video.youtubeId;
+    const id = video?.youtubeId;
     const params = new URLSearchParams({
       rel: '0',
       modestbranding: '1',
@@ -72,7 +72,7 @@ export default function VideoPlayer({ video, onEnded, onIntersectChange, nextVid
         'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen',
       providerId: id,
     };
-  }, [video, autoplayWanted]);
+  }, [video?.youtubeId, autoplayWanted]);
 
   // Mark provider type in context
   useEffect(() => {
