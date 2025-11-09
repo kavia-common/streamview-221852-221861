@@ -1,6 +1,6 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getBestThumbnail } from '../utils/thumbnails';
+import { useThumbnail } from '../utils/useThumbnail';
 
 /**
  * PUBLIC_INTERFACE
@@ -10,26 +10,17 @@ export default function VideoCard({ video, compact = false }) {
   const navigate = useNavigate();
   const onClick = () => navigate(`/watch/${video.id}`);
 
-  // Manage image loading and error fallback
-  const fallback = '/assets/thumbnail-fallback.jpg';
-  const initialSrc = useMemo(() => getBestThumbnail(video, fallback), [video]);
-  const [src, setSrc] = useState(initialSrc);
-  const [loaded, setLoaded] = useState(false);
-  const erroredRef = useRef(false);
-
-  const handleError = () => {
-    if (!erroredRef.current) {
-      erroredRef.current = true;
-      setSrc(fallback);
-    }
-  };
+  // Async thumbnail resolver with fallback and blur-up
+  const { url, loaded, isResolving, onError, onLoad } = useThumbnail(video, {
+    fallback: '/assets/thumbnail-fallback.jpg',
+  });
 
   const Img = (
     <img
-      src={src}
+      src={url}
       alt={`${video.title} thumbnail`}
-      onError={handleError}
-      onLoad={() => setLoaded(true)}
+      onError={onError}
+      onLoad={onLoad}
       style={{
         filter: loaded ? 'none' : 'blur(12px)',
         transform: loaded ? 'none' : 'scale(1.05)',
@@ -51,7 +42,7 @@ export default function VideoCard({ video, compact = false }) {
         aria-label={`Open ${video.title}`}
       >
         <div className="thumb" aria-label="Video thumbnail">
-          {!loaded && <div className="skeleton" aria-hidden />}
+          {(!loaded || isResolving) && <div className="skeleton" aria-hidden />}
           {Img}
           <span className="badge">{video.duration || '--:--'}</span>
         </div>
@@ -76,7 +67,7 @@ export default function VideoCard({ video, compact = false }) {
       aria-label={`Open ${video.title}`}
     >
       <div className="thumb" aria-label="Video thumbnail">
-        {!loaded && <div className="skeleton" aria-hidden />}
+        {(!loaded || isResolving) && <div className="skeleton" aria-hidden />}
         {Img}
         <span className="badge">{video.duration || '--:--'}</span>
       </div>

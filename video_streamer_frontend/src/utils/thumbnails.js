@@ -1,11 +1,12 @@
-//
+/**
 // PUBLIC_INTERFACE
 // Utility helpers to compute reliable thumbnail URLs with fallbacks for various providers.
-//
+*/
 const YT_HOST = 'https://i.ytimg.com';
 
 /**
- * Get a reliable YouTube thumbnail given a known video ID.
+ * PUBLIC_INTERFACE
+ * Get a YouTube thumbnail by quality name for a known video ID.
  */
 export function getYouTubeThumbById(videoId, quality = 'hqdefault') {
   if (!videoId) return null;
@@ -13,6 +14,18 @@ export function getYouTubeThumbById(videoId, quality = 'hqdefault') {
 }
 
 /**
+ * PUBLIC_INTERFACE
+ * Build ordered list of candidate YouTube thumbnails from best to worse, with robust fallbacks:
+ * maxresdefault -> sddefault -> hqdefault -> mqdefault -> default
+ */
+export function buildYouTubeCandidates(videoId) {
+  if (!videoId) return [];
+  const qualities = ['maxresdefault', 'sddefault', 'hqdefault', 'mqdefault', 'default'];
+  return qualities.map((q) => getYouTubeThumbById(videoId, q));
+}
+
+/**
+ * PUBLIC_INTERFACE
  * Attempt to extract YouTube videoId from a URL if not provided separately.
  */
 export function extractYouTubeId(url) {
@@ -31,8 +44,48 @@ export function extractYouTubeId(url) {
 }
 
 /**
+ * PUBLIC_INTERFACE
+ * Extract Vimeo numeric ID from URL.
+ */
+export function getVimeoIdFromUrl(url) {
+  if (!url) return null;
+  const m = url.match(/vimeo\.com\/(\d+)/);
+  return m ? m[1] : null;
+}
+
+/**
+ * PUBLIC_INTERFACE
+ * Build Vimeo oEmbed endpoint URL for a given video URL to retrieve thumbnail_url.
+ */
+export function getVimeoOembedThumb(videoPageUrl) {
+  if (!videoPageUrl) return null;
+  // API: https://vimeo.com/api/oembed.json?url=<video_page_url>
+  return `https://vimeo.com/api/oembed.json?url=${encodeURIComponent(videoPageUrl)}`;
+}
+
+/**
+ * PUBLIC_INTERFACE
+ * Derive possible Vimeo thumbnails when oEmbed is blocked or slow.
+ * - vumbnail.com (proxy)
+ * - i.vimeocdn.com variations with common sizes
+ */
+export function getVimeoDerivedCandidates(vimeoId) {
+  if (!vimeoId) return [];
+  const candidates = [
+    // vumbnail
+    `https://vumbnail.com/${vimeoId}.jpg`,
+    // i.vimeocdn known formats
+    `https://i.vimeocdn.com/video/${vimeoId}_1280x720.jpg`,
+    `https://i.vimeocdn.com/video/${vimeoId}_960x540.jpg`,
+    `https://i.vimeocdn.com/video/${vimeoId}_640x360.jpg`,
+    // Generic without size (sometimes resolves)
+    `https://i.vimeocdn.com/video/${vimeoId}.jpg`,
+  ];
+  return candidates;
+}
+
+/**
  * Build a Vimeo thumbnail if a known thumbnail URL is provided in data. If not, return null.
- * We avoid calling external oEmbed APIs; callers can provide a static vimeoThumb.
  */
 export function getVimeoThumbFromData(video) {
   if (video?.vimeoThumb) return video.vimeoThumb;
@@ -46,44 +99,4 @@ export function getVimeoThumbFromData(video) {
 export function getMp4ThumbFromData(video) {
   if (video?.thumbnail) return video.thumbnail;
   return null;
-}
-
-/**
- * PUBLIC_INTERFACE
- * getBestThumbnail(video): Computes the best thumbnail URL for a given video object.
- * Order:
- * 1) video.thumbnail if present
- * 2) Provider-specific derived thumb:
- *    - YouTube: derive from video.videoId or url
- *    - Vimeo: use provided vimeoThumb (static)
- *    - MP4: use provided thumbnail if any
- * 3) Fallback to local placeholder
- */
-export function getBestThumbnail(video, fallbackUrl = '/assets/thumbnail-fallback.jpg') {
-  if (!video) return fallbackUrl;
-
-  // Use explicit thumbnail if provided and looks valid
-  if (video.thumbnail && typeof video.thumbnail === 'string' && video.thumbnail.startsWith('http')) {
-    return video.thumbnail;
-  }
-
-  // Provider specifics
-  if (video.sourceType === 'youtube') {
-    const id = video.videoId || extractYouTubeId(video.url);
-    const yt = getYouTubeThumbById(id);
-    if (yt) return yt;
-  }
-
-  if (video.sourceType === 'vimeo') {
-    const v = getVimeoThumbFromData(video);
-    if (v) return v;
-  }
-
-  if (video.sourceType === 'mp4') {
-    const m = getMp4ThumbFromData(video);
-    if (m) return m;
-  }
-
-  // Final fallback
-  return fallbackUrl;
 }
