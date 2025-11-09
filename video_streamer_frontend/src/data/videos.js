@@ -1,568 +1,425 @@
 export const videos = [
-  // YouTube-only Coursera curated catalog (30 items).
-  // Note: We preserve the existing thumbnail cascade (maxres -> sd -> hq -> mq -> default)
-  // via useThumbnail/thumbnails utils. Where historically known grey-frame issues can occur
-  // (e.g., certain uploads without maxres), we optionally provide a thumbnail override,
-  // but the cascade will still try higher resolutions first for others.
+  // Curated family-friendly catalog (exactly 30). YouTube-only for consistent embed and thumbnails.
+  // Thumbnail cascade is preserved via useThumbnail/thumbnails: maxres -> sd -> hq -> mq -> default.
 
-  // 1. Machine Learning by Andrew Ng (Course trailer)
+  // 1. Peppa Pig - The Playground (official)
   {
-    id: 'cv-1',
-    title: 'Machine Learning by Andrew Ng | Stanford/Coursera Trailer',
+    id: 'kv-1',
+    title: 'Peppa Pig - The Playground',
     sourceType: 'youtube',
-    url: 'https://www.youtube.com/watch?v=5u4G23_OohI',
-    youtubeId: '5u4G23_OohI',
-    channel: 'Coursera',
-    views: '1.1M views',
-    uploadedAt: '8 years ago',
-    duration: '1:39',
-    description: 'Andrew Ng introduces Machine Learning on Coursera.',
+    url: 'https://www.youtube.com/watch?v=tV6Fh9i3k9Q',
+    youtubeId: 'tV6Fh9i3k9Q',
+    channel: 'Peppa Pig - Official Channel',
+    views: 'Millions of views',
+    uploadedAt: '6+ years ago',
+    duration: '5:10',
+    description: 'Peppa and friends have fun at the playground.',
   },
 
-  // 2. Deep Learning Specialization
+  // 2. Bluey - Library (official short)
   {
-    id: 'cv-2',
-    title: 'Deep Learning Specialization by Andrew Ng | Coursera',
+    id: 'kv-2',
+    title: 'Bluey - Library',
     sourceType: 'youtube',
-    url: 'https://www.youtube.com/watch?v=CS4cs9xVecg',
-    youtubeId: 'CS4cs9xVecg',
-    channel: 'DeepLearning.AI',
-    views: '3.5M views',
-    uploadedAt: '6 years ago',
-    duration: '2:20',
-    description: 'Overview of the Deep Learning Specialization on Coursera.',
+    url: 'https://www.youtube.com/watch?v=Jz8F5tS9JqE',
+    youtubeId: 'Jz8F5tS9JqE',
+    channel: 'Bluey - Official Channel',
+    views: 'Millions of views',
+    uploadedAt: '3+ years ago',
+    duration: '3:00',
+    description: 'Bluey and Bingo visit the library.',
   },
 
-  // 3. Google Data Analytics Professional Certificate
+  // 3. PAW Patrol - Pups Save the Day (clip)
   {
-    id: 'cv-3',
-    title: 'Google Data Analytics Professional Certificate | Coursera',
+    id: 'kv-3',
+    title: 'PAW Patrol - Pups Save the Day',
     sourceType: 'youtube',
-    url: 'https://www.youtube.com/watch?v=K6aZyYkYV9Y',
-    youtubeId: 'K6aZyYkYV9Y',
-    channel: 'Grow with Google',
-    views: '1.6M views',
-    uploadedAt: '3 years ago',
-    duration: '1:31',
-    description: 'Become job-ready with Google Data Analytics on Coursera.',
+    url: 'https://www.youtube.com/watch?v=5zqv0b2Z3NQ',
+    youtubeId: '5zqv0b2Z3NQ',
+    channel: 'PAW Patrol Official & Friends',
+    views: 'Millions of views',
+    uploadedAt: '5+ years ago',
+    duration: '4:20',
+    description: 'Ryder and pups are on a roll to save the day!',
   },
 
-  // 4. Google IT Support Professional Certificate
+  // 4. Sesame Street - The Alphabet Song
   {
-    id: 'cv-4',
-    title: 'Google IT Support Professional Certificate | Coursera',
+    id: 'kv-4',
+    title: 'Sesame Street: The Alphabet Song',
     sourceType: 'youtube',
-    url: 'https://www.youtube.com/watch?v=0QbS3M4Yq7E',
-    youtubeId: '0QbS3M4Yq7E',
-    channel: 'Grow with Google',
-    views: '3.9M views',
-    uploadedAt: '5 years ago',
-    duration: '1:23',
-    description: 'Launch your IT career with Google on Coursera.',
+    url: 'https://www.youtube.com/watch?v=do-pN0FHTG4',
+    youtubeId: 'do-pN0FHTG4',
+    channel: 'Sesame Street',
+    views: 'Millions of views',
+    uploadedAt: '10+ years ago',
+    duration: '2:22',
+    description: 'Sing the ABCs with your Sesame Street friends.',
   },
 
-  // 5. Meta Front-End Developer Professional Certificate
+  // 5. Cocomelon - Wheels on the Bus
   {
-    id: 'cv-5',
-    title: 'Meta Front-End Developer Professional Certificate | Coursera',
+    id: 'kv-5',
+    title: 'Cocomelon - Wheels on the Bus',
     sourceType: 'youtube',
-    url: 'https://www.youtube.com/watch?v=F-3gCw8sEL0',
-    youtubeId: 'F-3gCw8sEL0',
-    channel: 'Meta for Developers',
-    views: '820K views',
-    uploadedAt: '2 years ago',
-    duration: '1:11',
-    description: 'Start a career in front-end development with Meta on Coursera.',
+    url: 'https://www.youtube.com/watch?v=G6u5ZszC9jM',
+    youtubeId: 'G6u5ZszC9jM',
+    channel: 'Cocomelon - Nursery Rhymes',
+    views: 'Billions of views',
+    uploadedAt: '9+ years ago',
+    duration: '4:11',
+    description: 'A classic nursery rhyme for kids to sing along.',
   },
 
-  // 6. IBM Data Science Professional Certificate
+  // 6. Hey Duggee - The Super Squirrel Badge
   {
-    id: 'cv-6',
-    title: 'IBM Data Science Professional Certificate | Coursera',
+    id: 'kv-6',
+    title: 'Hey Duggee - The Super Squirrel Badge',
     sourceType: 'youtube',
-    url: 'https://www.youtube.com/watch?v=QG0wWfV1Zs8',
-    youtubeId: 'QG0wWfV1Zs8',
-    channel: 'IBM Technology',
-    views: '1.2M views',
-    uploadedAt: '4 years ago',
-    duration: '1:40',
-    description: 'Kickstart your data science journey with IBM on Coursera.',
+    url: 'https://www.youtube.com/watch?v=QxQf3PzK5iQ',
+    youtubeId: 'QxQf3PzK5iQ',
+    channel: 'Hey Duggee Official',
+    views: 'Millions of views',
+    uploadedAt: '6+ years ago',
+    duration: '7:10',
+    description: 'The Squirrels earn their Super Squirrel Badge.',
   },
 
-  // 7. IBM AI Engineering Professional Certificate
+  // 7. Shaun the Sheep - The Big Chase
   {
-    id: 'cv-7',
-    title: 'IBM AI Engineering Professional Certificate | Coursera',
+    id: 'kv-7',
+    title: 'Shaun the Sheep - The Big Chase',
     sourceType: 'youtube',
-    url: 'https://www.youtube.com/watch?v=47iWVSxGQYo',
-    youtubeId: '47iWVSxGQYo',
-    channel: 'IBM Technology',
-    views: '480K views',
-    uploadedAt: '4 years ago',
-    duration: '1:08',
-    description: 'Advance your AI engineering career with IBM on Coursera.',
+    url: 'https://www.youtube.com/watch?v=3QXv3Q9jO0w',
+    youtubeId: '3QXv3Q9jO0w',
+    channel: 'Shaun the Sheep Official',
+    views: 'Millions of views',
+    uploadedAt: '8+ years ago',
+    duration: '6:00',
+    description: 'Shaun and friends get into a funny chase.',
   },
 
-  // 8. Google UX Design Professional Certificate
+  // 8. Tom and Jerry - Classic Cartoon Collection (clip)
   {
-    id: 'cv-8',
-    title: 'Google UX Design Professional Certificate | Coursera',
+    id: 'kv-8',
+    title: 'Tom and Jerry - Classic Cartoon Clip',
     sourceType: 'youtube',
-    url: 'https://www.youtube.com/watch?v=Qffo2zY9jzA',
-    youtubeId: 'Qffo2zY9jzA',
-    channel: 'Grow with Google',
-    views: '2.1M views',
-    uploadedAt: '3 years ago',
-    duration: '1:22',
-    description: 'Learn UX design skills with Google on Coursera.',
+    url: 'https://www.youtube.com/watch?v=RW7xk0_0Q1M',
+    youtubeId: 'RW7xk0_0Q1M',
+    channel: 'WB Kids',
+    views: 'Millions of views',
+    uploadedAt: '7+ years ago',
+    duration: '4:58',
+    description: 'Classic Tom and Jerry antics in a safe, family-friendly clip.',
   },
 
-  // 9. Meta Back-End Developer Professional Certificate
+  // 9. Disney Junior - Mickey Mouse Clubhouse Theme
   {
-    id: 'cv-9',
-    title: 'Meta Back-End Developer Professional Certificate | Coursera',
+    id: 'kv-9',
+    title: 'Mickey Mouse Clubhouse Theme Song',
     sourceType: 'youtube',
-    url: 'https://www.youtube.com/watch?v=Evw6iFh0fF0',
-    youtubeId: 'Evw6iFh0fF0',
-    channel: 'Meta for Developers',
-    views: '620K views',
-    uploadedAt: '2 years ago',
-    duration: '1:07',
-    description: 'Become a back-end developer with Meta on Coursera.',
-  },
-
-  // 10. Stanford Algorithms (Coursera)
-  {
-    id: 'cv-10',
-    title: 'Algorithms: Design and Analysis | Coursera',
-    sourceType: 'youtube',
-    url: 'https://www.youtube.com/watch?v=HtSuA80QTyo',
-    youtubeId: 'HtSuA80QTyo',
-    channel: 'Coursera',
-    views: '3.2M views',
-    uploadedAt: '10 years ago',
-    duration: '1:41',
-    description: 'Introduction to Algorithms on Coursera.',
-  },
-
-  // 11. Google IT Automation with Python
-  {
-    id: 'cv-11',
-    title: 'Google IT Automation with Python | Coursera',
-    sourceType: 'youtube',
-    url: 'https://www.youtube.com/watch?v=8DvywoWv6fI',
-    youtubeId: '8DvywoWv6fI',
-    channel: 'Google Career Certificates',
-    views: '5.6M views',
-    uploadedAt: '4 years ago',
-    duration: '1:35',
-    description: 'Automate tasks with Python in this Google program on Coursera.',
-  },
-
-  // 12. IBM Cybersecurity Analyst Professional Certificate
-  {
-    id: 'cv-12',
-    title: 'IBM Cybersecurity Analyst Professional Certificate | Coursera',
-    sourceType: 'youtube',
-    url: 'https://www.youtube.com/watch?v=E2KJ9wQY2r0',
-    youtubeId: 'E2KJ9wQY2r0',
-    channel: 'IBM Technology',
-    views: '380K views',
-    uploadedAt: '3 years ago',
-    duration: '1:13',
-    description: 'Launch your cybersecurity career with IBM on Coursera.',
-  },
-
-  // 13. Google Cloud Digital Leader
-  {
-    id: 'cv-13',
-    title: 'Google Cloud Digital Leader Training | Coursera',
-    sourceType: 'youtube',
-    url: 'https://www.youtube.com/watch?v=m6L3mkaWzgc',
-    youtubeId: 'm6L3mkaWzgc',
-    channel: 'Google Cloud Tech',
-    views: '410K views',
-    uploadedAt: '2 years ago',
-    duration: '1:16',
-    description: 'Prepare for Cloud Digital Leader with Coursera.',
-  },
-
-  // 14. Meta Android Developer Professional Certificate
-  {
-    id: 'cv-14',
-    title: 'Meta Android Developer Professional Certificate | Coursera',
-    sourceType: 'youtube',
-    url: 'https://www.youtube.com/watch?v=Kqg8VxZt3X0',
-    youtubeId: 'Kqg8VxZt3X0',
-    channel: 'Meta for Developers',
-    views: '290K views',
-    uploadedAt: '2 years ago',
-    duration: '1:04',
-    description: 'Android developer career program from Meta on Coursera.',
-  },
-
-  // 15. Meta iOS Developer Professional Certificate
-  {
-    id: 'cv-15',
-    title: 'Meta iOS Developer Professional Certificate | Coursera',
-    sourceType: 'youtube',
-    url: 'https://www.youtube.com/watch?v=n2VQ0bU3qk4',
-    youtubeId: 'n2VQ0bU3qk4',
-    channel: 'Meta for Developers',
-    views: '240K views',
-    uploadedAt: '2 years ago',
-    duration: '1:10',
-    description: 'iOS developer career program from Meta on Coursera.',
-  },
-
-  // 16. University of Michigan Python for Everybody
-  {
-    id: 'cv-16',
-    title: 'Python for Everybody | Coursera Trailer',
-    sourceType: 'youtube',
-    url: 'https://www.youtube.com/watch?v=8DvywoWv6fI&t=10s',
-    youtubeId: '8DvywoWv6fI',
-    channel: 'Coursera',
-    views: '5.6M views',
-    uploadedAt: '7 years ago',
-    duration: '1:00',
-    description: 'Get started with Python for Everybody on Coursera.',
-  },
-
-  // 17. Johns Hopkins Data Science Specialization
-  {
-    id: 'cv-17',
-    title: 'Data Science Specialization | Johns Hopkins | Coursera',
-    sourceType: 'youtube',
-    url: 'https://www.youtube.com/watch?v=9XwPcOQYFqU',
-    youtubeId: '9XwPcOQYFqU',
-    channel: 'Coursera',
-    views: '970K views',
-    uploadedAt: '9 years ago',
-    duration: '1:08',
-    description: 'Overview of the Data Science Specialization on Coursera.',
-  },
-
-  // 18. Michigan Web Applications for Everybody
-  {
-    id: 'cv-18',
-    title: 'Web Applications for Everybody | Coursera',
-    sourceType: 'youtube',
-    url: 'https://www.youtube.com/watch?v=kJr4FQ_8W1U',
-    youtubeId: 'kJr4FQ_8W1U',
-    channel: 'Coursera',
-    views: '220K views',
-    uploadedAt: '7 years ago',
-    duration: '1:12',
-    description: 'Learn to build web apps on Coursera.',
-  },
-
-  // 19. Communication Skills for Engineers (Georgia Tech)
-  {
-    id: 'cv-19',
-    title: 'Communication Skills for Engineers | Coursera',
-    sourceType: 'youtube',
-    url: 'https://www.youtube.com/watch?v=QeWQvMZ6ZyU',
-    youtubeId: 'QeWQvMZ6ZyU',
-    channel: 'Georgia Tech',
-    views: '110K views',
-    uploadedAt: '6 years ago',
-    duration: '1:03',
-    description: 'Build effective communication skills on Coursera.',
-  },
-
-  // 20. AI For Everyone by Andrew Ng
-  {
-    id: 'cv-20',
-    title: 'AI For Everyone by Andrew Ng | Coursera',
-    sourceType: 'youtube',
-    url: 'https://www.youtube.com/watch?v=5q87K1Wao9E',
-    youtubeId: '5q87K1Wao9E',
-    channel: 'DeepLearning.AI',
-    views: '2.9M views',
-    uploadedAt: '5 years ago',
-    duration: '2:05',
-    description: 'Non-technical course about AI and its impacts.',
-  },
-
-  // 21. Generative AI with LLMs (DeepLearning.AI & AWS)
-  {
-    id: 'cv-21',
-    title: 'Generative AI with Large Language Models | Coursera',
-    sourceType: 'youtube',
-    url: 'https://www.youtube.com/watch?v=E5p-2qu8wNQ',
-    youtubeId: 'E5p-2qu8wNQ',
-    channel: 'DeepLearning.AI',
-    views: '1.1M views',
-    uploadedAt: '1 year ago',
-    duration: '1:54',
-    description: 'Learn practical generative AI skills on Coursera.',
-  },
-
-  // 22. Prompt Engineering for Everyone
-  {
-    id: 'cv-22',
-    title: 'Prompt Engineering for Everyone | Coursera',
-    sourceType: 'youtube',
-    url: 'https://www.youtube.com/watch?v=8oFZ2h0yJ2g',
-    youtubeId: '8oFZ2h0yJ2g',
-    channel: 'DeepLearning.AI',
-    views: '710K views',
-    uploadedAt: '1 year ago',
-    duration: '1:32',
-    description: 'Start using LLMs effectively with prompt engineering.',
-  },
-
-  // 23. Google Project Management Professional Certificate
-  {
-    id: 'cv-23',
-    title: 'Google Project Management Professional Certificate | Coursera',
-    sourceType: 'youtube',
-    url: 'https://www.youtube.com/watch?v=nMMv3C6F8xU',
-    youtubeId: 'nMMv3C6F8xU',
-    channel: 'Google Career Certificates',
-    views: '2.2M views',
-    uploadedAt: '3 years ago',
-    duration: '1:21',
-    description: 'Become a project manager with Google on Coursera.',
-  },
-
-  // 24. Google Digital Marketing & E-commerce
-  {
-    id: 'cv-24',
-    title: 'Google Digital Marketing & E-commerce | Coursera',
-    sourceType: 'youtube',
-    url: 'https://www.youtube.com/watch?v=L9XfG4rW6xg',
-    youtubeId: 'L9XfG4rW6xg',
-    channel: 'Google Career Certificates',
-    views: '1.0M views',
-    uploadedAt: '3 years ago',
-    duration: '1:18',
-    description: 'Prepare for e-commerce and digital marketing roles.',
-  },
-
-  // 25. IBM Full Stack Software Developer Professional Certificate
-  {
-    id: 'cv-25',
-    title: 'IBM Full Stack Software Developer Professional Certificate | Coursera',
-    sourceType: 'youtube',
-    url: 'https://www.youtube.com/watch?v=o0lG2Z7x1nE',
-    youtubeId: 'o0lG2Z7x1nE',
-    channel: 'IBM Technology',
-    views: '560K views',
-    uploadedAt: '3 years ago',
-    duration: '1:22',
-    description: 'Become a full-stack developer with IBM on Coursera.',
-  },
-
-  // 26. University of Illinois Digital Marketing Specialization
-  {
-    id: 'cv-26',
-    title: 'Digital Marketing Specialization | Coursera',
-    sourceType: 'youtube',
-    url: 'https://www.youtube.com/watch?v=LyZ8aAizI0w',
-    youtubeId: 'LyZ8aAizI0w',
-    channel: 'Coursera',
-    views: '740K views',
-    uploadedAt: '8 years ago',
-    duration: '1:25',
-    description: 'Master digital marketing with Illinois on Coursera.',
-  },
-
-  // 27. University of London Responsive Web Design
-  {
-    id: 'cv-27',
-    title: 'Responsive Web Design | University of London | Coursera',
-    sourceType: 'youtube',
-    url: 'https://www.youtube.com/watch?v=1Rs2ND1ryYc',
-    youtubeId: '1Rs2ND1ryYc',
-    channel: 'Coursera',
-    views: '3.8M views',
-    uploadedAt: '9 years ago',
-    duration: '1:02',
-    description: 'Learn responsive web design on Coursera.',
-  },
-
-  // 28. Stanford Cryptography
-  {
-    id: 'cv-28',
-    title: 'Cryptography | Stanford | Coursera',
-    sourceType: 'youtube',
-    url: 'https://www.youtube.com/watch?v=2aHkqB2-46k',
-    youtubeId: '2aHkqB2-46k',
-    channel: 'Coursera',
-    views: '430K views',
-    uploadedAt: '9 years ago',
-    duration: '1:14',
-    description: 'Intro to Cryptography course on Coursera.',
-  },
-
-  // 29. Google TensorFlow on Google Cloud
-  {
-    id: 'cv-29',
-    title: 'Intro to TensorFlow on Google Cloud | Coursera',
-    sourceType: 'youtube',
-    url: 'https://www.youtube.com/watch?v=tPYj3fFJGjk',
-    youtubeId: 'tPYj3fFJGjk',
-    channel: 'freeCodeCamp.org (Course promoted on Coursera)',
-    views: '10M views',
-    uploadedAt: '4 years ago',
-    duration: '3:43:00',
-    description: 'TensorFlow course relevant to Coursera deep learning content.',
-  },
-
-  // 30. Natural Language Processing Specialization
-  {
-    id: 'cv-30',
-    title: 'Natural Language Processing Specialization | Coursera',
-    sourceType: 'youtube',
-    url: 'https://www.youtube.com/watch?v=8dLF3Zx9Q-0',
-    youtubeId: '8dLF3Zx9Q-0',
-    channel: 'DeepLearning.AI',
-    views: '650K views',
-    uploadedAt: '4 years ago',
-    duration: '1:28',
-    description: 'Learn NLP techniques with Coursera and DeepLearning.AI.',
-  },
-
-  // 31. Google Cybersecurity Professional Certificate
-  {
-    id: 'cv-31',
-    title: 'Google Cybersecurity Professional Certificate | Coursera',
-    sourceType: 'youtube',
-    url: 'https://www.youtube.com/watch?v=QaubA3l9Eys',
-    youtubeId: 'QaubA3l9Eys',
-    channel: 'Google Career Certificates',
-    views: '1.3M views',
-    uploadedAt: '2 years ago',
-    duration: '1:28',
-    description: 'Train for an entry-level cybersecurity role with Google on Coursera.',
-  },
-
-  // 32. AWS Cloud Solutions Architect (Coursera related)
-  {
-    id: 'cv-32',
-    title: 'AWS Solutions Architect Learning Path | Coursera',
-    sourceType: 'youtube',
-    url: 'https://www.youtube.com/watch?v=Ia-UEYYR44s',
-    youtubeId: 'Ia-UEYYR44s',
-    channel: 'freeCodeCamp.org (AWS path aligned with Coursera content)',
-    views: '3.4M views',
-    uploadedAt: '3 years ago',
-    duration: '10:00:00',
-    description: 'Comprehensive AWS SA prep, aligns with Coursera cloud content.',
-  },
-
-  // 33. Meta Database Engineer Professional Certificate
-  {
-    id: 'cv-33',
-    title: 'Meta Database Engineer Professional Certificate | Coursera',
-    sourceType: 'youtube',
-    url: 'https://www.youtube.com/watch?v=pWV7YV2Q2jI',
-    youtubeId: 'pWV7YV2Q2jI',
-    channel: 'Meta for Developers',
-    views: '210K views',
-    uploadedAt: '2 years ago',
-    duration: '1:05',
-    description: 'Learn database engineering with Meta on Coursera.',
-  },
-
-  // 34. Introduction to TensorFlow for AI, ML, and DL
-  {
-    id: 'cv-34',
-    title: 'Intro to TensorFlow for AI, ML, and DL | Coursera',
-    sourceType: 'youtube',
-    url: 'https://www.youtube.com/watch?v=xYsgHfCkUdw',
-    youtubeId: 'xYsgHfCkUdw',
-    channel: 'Coursera',
-    views: '520K views',
-    uploadedAt: '5 years ago',
+    url: 'https://www.youtube.com/watch?v=8H3g8l3kV0o',
+    youtubeId: '8H3g8l3kV0o',
+    channel: 'Disney Junior',
+    views: 'Millions of views',
+    uploadedAt: '10+ years ago',
     duration: '1:36',
-    description: 'Learn the basics of TensorFlow on Coursera.',
+    description: 'It’s the Mickey Mouse Clubhouse theme song!',
   },
 
-  // 35. Mathematics for Machine Learning
+  // 10. PJ Masks - Super Moon Adventure (clip)
   {
-    id: 'cv-35',
-    title: 'Mathematics for Machine Learning | Coursera',
+    id: 'kv-10',
+    title: 'PJ Masks - Super Moon Adventure',
     sourceType: 'youtube',
-    url: 'https://www.youtube.com/watch?v=QK0vmuQib9g',
-    youtubeId: 'QK0vmuQib9g',
-    channel: 'Coursera',
-    views: '870K views',
-    uploadedAt: '7 years ago',
+    url: 'https://www.youtube.com/watch?v=4jK8lH3jF_Y',
+    youtubeId: '4jK8lH3jF_Y',
+    channel: 'PJ Masks Official',
+    views: 'Millions of views',
+    uploadedAt: '5+ years ago',
+    duration: '5:02',
+    description: 'Catboy, Owlette and Gekko save the day!',
+  },
+
+  // 11. BabyBus - Colors Song
+  {
+    id: 'kv-11',
+    title: 'BabyBus - Learn Colors Song',
+    sourceType: 'youtube',
+    url: 'https://www.youtube.com/watch?v=Q3dEo4r8x6E',
+    youtubeId: 'Q3dEo4r8x6E',
+    channel: 'BabyBus - Kids Songs and Cartoons',
+    views: 'Millions of views',
+    uploadedAt: '6+ years ago',
+    duration: '3:30',
+    description: 'Learn colors with cute BabyBus characters.',
+  },
+
+  // 12. Blippi - Construction Vehicles for Kids
+  {
+    id: 'kv-12',
+    title: 'Blippi - Construction Vehicles for Kids',
+    sourceType: 'youtube',
+    url: 'https://www.youtube.com/watch?v=KyW8hHhZ0xQ',
+    youtubeId: 'KyW8hHhZ0xQ',
+    channel: 'Blippi - Educational Videos for Kids',
+    views: 'Millions of views',
+    uploadedAt: '7+ years ago',
+    duration: '15:00',
+    description: 'Blippi explores construction vehicles and teaches about them.',
+  },
+
+  // 13. Super Simple Songs - Twinkle Twinkle Little Star
+  {
+    id: 'kv-13',
+    title: 'Twinkle Twinkle Little Star',
+    sourceType: 'youtube',
+    url: 'https://www.youtube.com/watch?v=yCjJyiqpAuU',
+    youtubeId: 'yCjJyiqpAuU',
+    channel: 'Super Simple Songs - Kids Songs',
+    views: 'Hundreds of millions of views',
+    uploadedAt: '10+ years ago',
+    duration: '2:12',
+    description: 'A calm lullaby for kids to sing along.',
+  },
+
+  // 14. Pinkfong - Baby Shark Dance
+  {
+    id: 'kv-14',
+    title: 'Baby Shark Dance',
+    sourceType: 'youtube',
+    url: 'https://www.youtube.com/watch?v=XqZsoesa55w',
+    youtubeId: 'XqZsoesa55w',
+    channel: 'Pinkfong Baby Shark - Kids Songs & Stories',
+    views: 'Billions of views',
+    uploadedAt: '7+ years ago',
+    duration: '2:16',
+    description: 'The famous Baby Shark dance song.',
+  },
+
+  // 15. Masha and the Bear - Recipe for Disaster
+  {
+    id: 'kv-15',
+    title: 'Masha and the Bear - Recipe for Disaster',
+    sourceType: 'youtube',
+    url: 'https://www.youtube.com/watch?v=KYniUCGPGLs',
+    youtubeId: 'KYniUCGPGLs',
+    channel: 'Masha and The Bear',
+    views: 'Billions of views',
+    uploadedAt: '9+ years ago',
+    duration: '6:54',
+    description: 'Masha’s big appetite leads to a funny adventure.',
+  },
+
+  // 16. Oddbods - Party Monsters
+  {
+    id: 'kv-16',
+    title: 'Oddbods - Party Monsters',
+    sourceType: 'youtube',
+    url: 'https://www.youtube.com/watch?v=5_SoZ4W7N8I',
+    youtubeId: '5_SoZ4W7N8I',
+    channel: 'Oddbods - Official',
+    views: 'Millions of views',
+    uploadedAt: '6+ years ago',
+    duration: '7:56',
+    description: 'The Oddbods throw a silly and fun party.',
+  },
+
+  // 17. Pocoyo - The Big Game
+  {
+    id: 'kv-17',
+    title: 'Pocoyo - The Big Game',
+    sourceType: 'youtube',
+    url: 'https://www.youtube.com/watch?v=_q4hbTQb8nE',
+    youtubeId: '_q4hbTQb8nE',
+    channel: 'POCOYO in ENGLISH',
+    views: 'Millions of views',
+    uploadedAt: '8+ years ago',
+    duration: '7:05',
+    description: 'Pocoyo and friends have fun learning about teamwork.',
+  },
+
+  // 18. Larva TUBA - Funny Moments
+  {
+    id: 'kv-18',
+    title: 'Larva - Funny Moments Compilation',
+    sourceType: 'youtube',
+    url: 'https://www.youtube.com/watch?v=lS5XTu1oUpA',
+    youtubeId: 'lS5XTu1oUpA',
+    channel: 'Larva TUBA',
+    views: 'Millions of views',
+    uploadedAt: '5+ years ago',
+    duration: '10:00',
+    description: 'Slapstick, non-verbal comedy for kids.',
+  },
+
+  // 19. Booba - Magic Pencil
+  {
+    id: 'kv-19',
+    title: 'Booba - Magic Pencil',
+    sourceType: 'youtube',
+    url: 'https://www.youtube.com/watch?v=5J2q8wK0pYI',
+    youtubeId: '5J2q8wK0pYI',
+    channel: 'Booba - Cartoon for Kids',
+    views: 'Millions of views',
+    uploadedAt: '6+ years ago',
+    duration: '3:52',
+    description: 'Booba discovers a magic pencil with surprising results.',
+  },
+
+  // 20. Tayo the Little Bus - The Best
+  {
+    id: 'kv-20',
+    title: 'Tayo the Little Bus - The Best',
+    sourceType: 'youtube',
+    url: 'https://www.youtube.com/watch?v=QJ2k3f0wG2k',
+    youtubeId: 'QJ2k3f0wG2k',
+    channel: 'Tayo The Little Bus',
+    views: 'Millions of views',
+    uploadedAt: '9+ years ago',
+    duration: '11:00',
+    description: 'Tayo and friends learn life lessons together.',
+  },
+
+  // 21. Peppa Pig - The Rainbow
+  {
+    id: 'kv-21',
+    title: 'Peppa Pig - The Rainbow',
+    sourceType: 'youtube',
+    url: 'https://www.youtube.com/watch?v=Vg7Vv2Rz1F8',
+    youtubeId: 'Vg7Vv2Rz1F8',
+    channel: 'Peppa Pig - Official Channel',
+    views: 'Millions of views',
+    uploadedAt: '6+ years ago',
+    duration: '5:05',
+    description: 'Peppa and George look for a rainbow after the rain.',
+  },
+
+  // 22. Bluey - Magic Xylophone
+  {
+    id: 'kv-22',
+    title: 'Bluey - Magic Xylophone',
+    sourceType: 'youtube',
+    url: 'https://www.youtube.com/watch?v=SLR4v9c9kG8',
+    youtubeId: 'SLR4v9c9kG8',
+    channel: 'Bluey - Official Channel',
+    views: 'Millions of views',
+    uploadedAt: '3+ years ago',
+    duration: '3:20',
+    description: 'Bluey and Bingo have fun with a magic xylophone.',
+  },
+
+  // 23. Thomas & Friends - A Big Day for Thomas
+  {
+    id: 'kv-23',
+    title: 'Thomas & Friends - A Big Day for Thomas',
+    sourceType: 'youtube',
+    url: 'https://www.youtube.com/watch?v=5wP2aY8GQNo',
+    youtubeId: '5wP2aY8GQNo',
+    channel: 'Thomas & Friends',
+    views: 'Millions of views',
+    uploadedAt: '10+ years ago',
+    duration: '5:55',
+    description: 'Thomas is excited for a big adventure.',
+  },
+
+  // 24. Dora the Explorer - Backpack Song
+  {
+    id: 'kv-24',
+    title: 'Dora the Explorer - Backpack Song',
+    sourceType: 'youtube',
+    url: 'https://www.youtube.com/watch?v=yQ9k2tO8Y7E',
+    youtubeId: 'yQ9k2tO8Y7E',
+    channel: 'Nick Jr.',
+    views: 'Millions of views',
+    uploadedAt: '10+ years ago',
     duration: '1:20',
-    description: 'Linear algebra, calculus, and PCA for ML.',
+    description: 'Sing along with the Backpack song.',
   },
 
-  // 36. Google Cloud DevOps & SRE
+  // 25. Peppa Pig - Bubbles
   {
-    id: 'cv-36',
-    title: 'DevOps & SRE on Google Cloud | Coursera',
+    id: 'kv-25',
+    title: 'Peppa Pig - Bubbles',
     sourceType: 'youtube',
-    url: 'https://www.youtube.com/watch?v=HGTJBPNC-Gw',
-    youtubeId: 'HGTJBPNC-Gw',
-    channel: 'freeCodeCamp.org (content aligned with Coursera tracks)',
-    views: '2.6M views',
-    uploadedAt: '3 years ago',
-    duration: '2:00:00',
-    description: 'DevOps foundations relevant to Coursera pathways.',
+    url: 'https://www.youtube.com/watch?v=3wRMiA6iB8M',
+    youtubeId: '3wRMiA6iB8M',
+    channel: 'Peppa Pig - Official Channel',
+    views: 'Millions of views',
+    uploadedAt: '6+ years ago',
+    duration: '5:10',
+    description: 'Peppa and George make lots of bubbles.',
   },
 
-  // 37. IBM Applied AI Professional Certificate
+  // 26. Fireman Sam - Best Rescues
   {
-    id: 'cv-37',
-    title: 'IBM Applied AI Professional Certificate | Coursera',
+    id: 'kv-26',
+    title: 'Fireman Sam - Best Rescues',
     sourceType: 'youtube',
-    url: 'https://www.youtube.com/watch?v=ChJ6DPd7OJ0',
-    youtubeId: 'ChJ6DPd7OJ0',
-    channel: 'IBM Technology',
-    views: '330K views',
-    uploadedAt: '3 years ago',
-    duration: '1:17',
-    description: 'Hands-on AI skills with IBM on Coursera.',
+    url: 'https://www.youtube.com/watch?v=8lG0kQm1sVg',
+    youtubeId: '8lG0kQm1sVg',
+    channel: 'Fireman Sam',
+    views: 'Millions of views',
+    uploadedAt: '7+ years ago',
+    duration: '10:30',
+    description: 'Fireman Sam and team help the town in heroic ways.',
   },
 
-  // 38. University of London: Responsive Web Design (alt)
+  // 27. Paddington Bear - Sticky Situation
   {
-    id: 'cv-38',
-    title: 'Responsive Web Design Basics | Coursera',
+    id: 'kv-27',
+    title: 'Paddington Bear - A Sticky Situation',
     sourceType: 'youtube',
-    url: 'https://www.youtube.com/watch?v=srvUrASNj0s',
-    youtubeId: 'srvUrASNj0s',
-    channel: 'Google Chrome Developers (supports Coursera content)',
-    views: '2.5M views',
-    uploadedAt: '7 years ago',
-    duration: '4:36',
-    description: 'Responsive design essentials complementary to Coursera tracks.',
+    url: 'https://www.youtube.com/watch?v=8bEo-8g1QnA',
+    youtubeId: '8bEo-8g1QnA',
+    channel: 'The Adventures of Paddington',
+    views: 'Millions of views',
+    uploadedAt: '4+ years ago',
+    duration: '5:45',
+    description: 'Paddington gets into a sticky but funny mess.',
   },
 
-  // 39. IBM Introduction to Data Analytics
+  // 28. Octonauts - The Great Algae Escape
   {
-    id: 'cv-39',
-    title: 'Introduction to Data Analytics | IBM | Coursera',
+    id: 'kv-28',
+    title: 'Octonauts - The Great Algae Escape',
     sourceType: 'youtube',
-    url: 'https://www.youtube.com/watch?v=HdzI-umdQZM',
-    youtubeId: 'HdzI-umdQZM',
-    channel: 'IBM Technology',
-    views: '420K views',
-    uploadedAt: '3 years ago',
-    duration: '1:18',
-    description: 'Get started in data analytics with IBM on Coursera.',
+    url: 'https://www.youtube.com/watch?v=8c0d7K6m6MU',
+    youtubeId: '8c0d7K6m6MU',
+    channel: 'Octonauts',
+    views: 'Millions of views',
+    uploadedAt: '6+ years ago',
+    duration: '11:05',
+    description: 'Underwater adventure with the Octonauts crew.',
   },
 
-  // 40. Google Advanced Data Analytics Professional Certificate
+  // 29. The Gruffalo - Read Aloud
   {
-    id: 'cv-40',
-    title: 'Google Advanced Data Analytics Professional Certificate | Coursera',
+    id: 'kv-29',
+    title: 'The Gruffalo - Read Aloud Story',
     sourceType: 'youtube',
-    url: 'https://www.youtube.com/watch?v=_fZsQ48uH6w',
-    youtubeId: '_fZsQ48uH6w',
-    channel: 'Google Career Certificates',
-    views: '380K views',
-    uploadedAt: '1 year ago',
-    duration: '1:14',
-    description: 'Advance your analytics career with Google on Coursera.',
+    url: 'https://www.youtube.com/watch?v=s8sUPpPc8Ws',
+    youtubeId: 's8sUPpPc8Ws',
+    channel: 'The Official Gruffalo',
+    views: 'Millions of views',
+    uploadedAt: '8+ years ago',
+    duration: '10:52',
+    description: 'A cozy read aloud of The Gruffalo.',
+  },
+
+  // 30. Room on the Broom - Read Aloud
+  {
+    id: 'kv-30',
+    title: 'Room on the Broom - Read Aloud Story',
+    sourceType: 'youtube',
+    url: 'https://www.youtube.com/watch?v=cWB0goTWZic',
+    youtubeId: 'cWB0goTWZic',
+    channel: 'Magic Light Pictures',
+    views: 'Millions of views',
+    uploadedAt: '9+ years ago',
+    duration: '8:52',
+    description: 'A friendly read aloud of Room on the Broom.',
   },
 ];
 
