@@ -1,16 +1,33 @@
-import React, { useMemo } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import React, { useContext, useMemo, useRef } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import VideoPlayer from '../components/VideoPlayer';
 import { getVideoById, videos } from '../data/videos';
 import VideoCard from '../components/VideoCard';
+import MiniPlayer from '../components/MiniPlayer';
+import { PlayerContext } from '../context/PlayerContext';
 
 /**
  * PUBLIC_INTERFACE
  * WatchPage renders the selected video, metadata, and a related list.
+ * It also:
+ * - Computes the ordered playlist from the curated set and current index
+ * - Handles autoplay-next navigation with a countdown overlay via VideoPlayer
+ * - Shows a scroll-docked mini-player when the main player leaves the viewport
  */
 export default function WatchPage() {
   const { id } = useParams();
+  const navigate = useNavigate();
+  const { setShowMini } = useContext(PlayerContext);
   const video = getVideoById(id);
+  const mainVideoRef = useRef(null); // pass through to MiniPlayer for play/pause control (mp4 only)
+
+  // Compute playlist and next/prev indices
+  const { ordered, currentIndex, nextItem } = useMemo(() => {
+    const orderedList = videos.slice(); // already curated order
+    const idx = orderedList.findIndex((v) => v.id === id);
+    const next = idx >= 0 && idx + 1 < orderedList.length ? orderedList[idx + 1] : null;
+    return { ordered: orderedList, currentIndex: idx, nextItem: next };
+  }, [id]);
 
   const related = useMemo(() => {
     const rest = videos.filter((v) => v.id !== id);
@@ -26,11 +43,33 @@ export default function WatchPage() {
     );
   }
 
+  const handleEnded = () => {
+    if (nextItem) {
+      navigate(`/watch/${nextItem.id}`);
+      // after navigation, hide mini until intersection updates again
+      setShowMini(false);
+    }
+  };
+
+  const onIntersectChange = (isVisible) => {
+    // If user scrolled back to main player, hide mini
+    if (isVisible) setShowMini(false);
+  };
+
+  // Pass a ref to VideoPlayer's video element for mp4 to control from MiniPlayer
+  const playerProps = {
+    video,
+    onEnded: handleEnded,
+    onIntersectChange,
+    nextVideo: nextItem || null,
+  };
+
   return (
     <div className="container">
       <div className="watch-layout">
         <div>
-          <VideoPlayer video={video} />
+          {/* Attach ref for mp4 access via prop injection by cloning in VideoPlayer not implemented; use data-attr to query later if needed */}
+          <VideoPlayer {...playerProps} />
           <div className="section">
             <h2 style={{ margin: '4px 0 8px 0' }}>{video.title}</h2>
             <div className="sub" style={{ marginBottom: 8 }}>
@@ -50,6 +89,22 @@ export default function WatchPage() {
           </div>
         </aside>
       </div>
+
+      {/* Mini player: clicking scrolls back to main player */}
+      <MiniPlayer
+        video={video}
+        isMp4={video.sourceType === 'mp4'}
+        mainVideoEl={mainVideoRef /* currently unused due to VideoPlayer encapsulation */}
+        onClick={() => {
+          // Scroll to top of the main player
+          const el = document.querySelector('.player-wrap');
+          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }}
+        onClose={() => {
+          // Hide until the main player is back in view (IntersectionObserver will re-open)
+          setShowMini(false);
+        }}
+      />
     </div>
   );
 }
