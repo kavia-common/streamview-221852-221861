@@ -1,2 +1,1 @@
-This is a placeholder text file to be replaced by the system with the actual binary image. 
-Do NOT modify this line. The CI will provide the binary asset during deployment.
+<binary file placeholder - ensure an image exists at build/deploy time.>

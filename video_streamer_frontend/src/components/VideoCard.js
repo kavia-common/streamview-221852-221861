@@ -37,6 +37,8 @@ export default function VideoCard({ video, compact = false }) {
       onLoad={onLoad}
       loading="lazy"
       decoding="async"
+      width={1280}
+      height={720}
       style={{
         background:
           'linear-gradient(135deg, rgba(0,0,0,0.06), rgba(0,0,0,0.02))',

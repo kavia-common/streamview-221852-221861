@@ -1,6 +1,6 @@
 export const videos = [
   // Curated family-friendly catalog (exactly 30). YouTube-only for consistent embed and thumbnails.
-  // Thumbnail cascade is preserved via useThumbnail/thumbnails: maxres -> sd -> hq -> mq -> default.
+  // Thumbnails now support explicit overrides and prefer sd/hq for reliability.
 
   // 1. Peppa Pig - The Playground (official)
   {
@@ -14,6 +14,7 @@ export const videos = [
     uploadedAt: '6+ years ago',
     duration: '5:10',
     description: 'Peppa and friends have fun at the playground.',
+    thumbnail: 'https://i.ytimg.com/vi/tV6Fh9i3k9Q/sddefault.jpg',
   },
 
   // 2. Bluey - Library (official short)
@@ -28,6 +29,7 @@ export const videos = [
     uploadedAt: '3+ years ago',
     duration: '3:00',
     description: 'Bluey and Bingo visit the library.',
+    thumbnail: 'https://i.ytimg.com/vi/Jz8F5tS9JqE/hqdefault.jpg',
   },
 
   // 3. PAW Patrol - Pups Save the Day (clip)
@@ -42,6 +44,7 @@ export const videos = [
     uploadedAt: '5+ years ago',
     duration: '4:20',
     description: 'Ryder and pups are on a roll to save the day!',
+    thumbnail: 'https://i.ytimg.com/vi/5zqv0b2Z3NQ/sddefault.jpg',
   },
 
   // 4. Sesame Street - The Alphabet Song
@@ -56,6 +59,7 @@ export const videos = [
     uploadedAt: '10+ years ago',
     duration: '2:22',
     description: 'Sing the ABCs with your Sesame Street friends.',
+    thumbnail: 'https://i.ytimg.com/vi/do-pN0FHTG4/hqdefault.jpg',
   },
 
   // 5. Cocomelon - Wheels on the Bus
@@ -70,6 +74,7 @@ export const videos = [
     uploadedAt: '9+ years ago',
     duration: '4:11',
     description: 'A classic nursery rhyme for kids to sing along.',
+    thumbnail: 'https://i.ytimg.com/vi/G6u5ZszC9jM/sddefault.jpg',
   },
 
   // 6. Hey Duggee - The Super Squirrel Badge
@@ -84,6 +89,7 @@ export const videos = [
     uploadedAt: '6+ years ago',
     duration: '7:10',
     description: 'The Squirrels earn their Super Squirrel Badge.',
+    thumbnail: 'https://i.ytimg.com/vi/QxQf3PzK5iQ/hqdefault.jpg',
   },
 
   // 7. Shaun the Sheep - The Big Chase
@@ -98,6 +104,7 @@ export const videos = [
     uploadedAt: '8+ years ago',
     duration: '6:00',
     description: 'Shaun and friends get into a funny chase.',
+    thumbnail: 'https://i.ytimg.com/vi/3QXv3Q9jO0w/sddefault.jpg',
   },
 
   // 8. Tom and Jerry - Classic Cartoon Collection (clip)
@@ -112,6 +119,7 @@ export const videos = [
     uploadedAt: '7+ years ago',
     duration: '4:58',
     description: 'Classic Tom and Jerry antics in a safe, family-friendly clip.',
+    thumbnail: 'https://i.ytimg.com/vi/RW7xk0_0Q1M/hqdefault.jpg',
   },
 
   // 9. Disney Junior - Mickey Mouse Clubhouse Theme
@@ -126,6 +134,7 @@ export const videos = [
     uploadedAt: '10+ years ago',
     duration: '1:36',
     description: 'It’s the Mickey Mouse Clubhouse theme song!',
+    thumbnail: 'https://i.ytimg.com/vi/8H3g8l3kV0o/hqdefault.jpg',
   },
 
   // 10. PJ Masks - Super Moon Adventure (clip)
@@ -140,6 +149,7 @@ export const videos = [
     uploadedAt: '5+ years ago',
     duration: '5:02',
     description: 'Catboy, Owlette and Gekko save the day!',
+    thumbnail: 'https://i.ytimg.com/vi/4jK8lH3jF_Y/sddefault.jpg',
   },
 
   // 11. BabyBus - Colors Song
@@ -154,6 +164,7 @@ export const videos = [
     uploadedAt: '6+ years ago',
     duration: '3:30',
     description: 'Learn colors with cute BabyBus characters.',
+    thumbnail: 'https://i.ytimg.com/vi/Q3dEo4r8x6E/hqdefault.jpg',
   },
 
   // 12. Blippi - Construction Vehicles for Kids
@@ -168,6 +179,7 @@ export const videos = [
     uploadedAt: '7+ years ago',
     duration: '15:00',
     description: 'Blippi explores construction vehicles and teaches about them.',
+    thumbnail: 'https://i.ytimg.com/vi/KyW8hHhZ0xQ/sddefault.jpg',
   },
 
   // 13. Super Simple Songs - Twinkle Twinkle Little Star
@@ -182,6 +194,7 @@ export const videos = [
     uploadedAt: '10+ years ago',
     duration: '2:12',
     description: 'A calm lullaby for kids to sing along.',
+    thumbnail: 'https://i.ytimg.com/vi/yCjJyiqpAuU/hqdefault.jpg',
   },
 
   // 14. Pinkfong - Baby Shark Dance
@@ -196,6 +209,7 @@ export const videos = [
     uploadedAt: '7+ years ago',
     duration: '2:16',
     description: 'The famous Baby Shark dance song.',
+    thumbnail: 'https://i.ytimg.com/vi/XqZsoesa55w/sddefault.jpg',
   },
 
   // 15. Masha and the Bear - Recipe for Disaster
@@ -210,6 +224,7 @@ export const videos = [
     uploadedAt: '9+ years ago',
     duration: '6:54',
     description: 'Masha’s big appetite leads to a funny adventure.',
+    thumbnail: 'https://i.ytimg.com/vi/KYniUCGPGLs/hqdefault.jpg',
   },
 
   // 16. Oddbods - Party Monsters
@@ -224,6 +239,7 @@ export const videos = [
     uploadedAt: '6+ years ago',
     duration: '7:56',
     description: 'The Oddbods throw a silly and fun party.',
+    thumbnail: 'https://i.ytimg.com/vi/5_SoZ4W7N8I/sddefault.jpg',
   },
 
   // 17. Pocoyo - The Big Game
@@ -238,6 +254,7 @@ export const videos = [
     uploadedAt: '8+ years ago',
     duration: '7:05',
     description: 'Pocoyo and friends have fun learning about teamwork.',
+    thumbnail: 'https://i.ytimg.com/vi/_q4hbTQb8nE/hqdefault.jpg',
   },
 
   // 18. Larva TUBA - Funny Moments
@@ -252,6 +269,7 @@ export const videos = [
     uploadedAt: '5+ years ago',
     duration: '10:00',
     description: 'Slapstick, non-verbal comedy for kids.',
+    thumbnail: 'https://i.ytimg.com/vi/lS5XTu1oUpA/sddefault.jpg',
   },
 
   // 19. Booba - Magic Pencil
@@ -266,6 +284,7 @@ export const videos = [
     uploadedAt: '6+ years ago',
     duration: '3:52',
     description: 'Booba discovers a magic pencil with surprising results.',
+    thumbnail: 'https://i.ytimg.com/vi/5J2q8wK0pYI/hqdefault.jpg',
   },
 
   // 20. Tayo the Little Bus - The Best
@@ -280,6 +299,7 @@ export const videos = [
     uploadedAt: '9+ years ago',
     duration: '11:00',
     description: 'Tayo and friends learn life lessons together.',
+    thumbnail: 'https://i.ytimg.com/vi/QJ2k3f0wG2k/sddefault.jpg',
   },
 
   // 21. Peppa Pig - The Rainbow
@@ -294,6 +314,7 @@ export const videos = [
     uploadedAt: '6+ years ago',
     duration: '5:05',
     description: 'Peppa and George look for a rainbow after the rain.',
+    thumbnail: 'https://i.ytimg.com/vi/Vg7Vv2Rz1F8/hqdefault.jpg',
   },
 
   // 22. Bluey - Magic Xylophone
@@ -308,6 +329,7 @@ export const videos = [
     uploadedAt: '3+ years ago',
     duration: '3:20',
     description: 'Bluey and Bingo have fun with a magic xylophone.',
+    thumbnail: 'https://i.ytimg.com/vi/SLR4v9c9kG8/sddefault.jpg',
   },
 
   // 23. Thomas & Friends - A Big Day for Thomas
@@ -322,6 +344,7 @@ export const videos = [
     uploadedAt: '10+ years ago',
     duration: '5:55',
     description: 'Thomas is excited for a big adventure.',
+    thumbnail: 'https://i.ytimg.com/vi/5wP2aY8GQNo/hqdefault.jpg',
   },
 
   // 24. Dora the Explorer - Backpack Song
@@ -336,6 +359,7 @@ export const videos = [
     uploadedAt: '10+ years ago',
     duration: '1:20',
     description: 'Sing along with the Backpack song.',
+    thumbnail: 'https://i.ytimg.com/vi/yQ9k2tO8Y7E/hqdefault.jpg',
   },
 
   // 25. Peppa Pig - Bubbles
@@ -350,6 +374,7 @@ export const videos = [
     uploadedAt: '6+ years ago',
     duration: '5:10',
     description: 'Peppa and George make lots of bubbles.',
+    thumbnail: 'https://i.ytimg.com/vi/3wRMiA6iB8M/sddefault.jpg',
   },
 
   // 26. Fireman Sam - Best Rescues
@@ -364,6 +389,7 @@ export const videos = [
     uploadedAt: '7+ years ago',
     duration: '10:30',
     description: 'Fireman Sam and team help the town in heroic ways.',
+    thumbnail: 'https://i.ytimg.com/vi/8lG0kQm1sVg/hqdefault.jpg',
   },
 
   // 27. Paddington Bear - Sticky Situation
@@ -378,6 +404,7 @@ export const videos = [
     uploadedAt: '4+ years ago',
     duration: '5:45',
     description: 'Paddington gets into a sticky but funny mess.',
+    thumbnail: 'https://i.ytimg.com/vi/8bEo-8g1QnA/hqdefault.jpg',
   },
 
   // 28. Octonauts - The Great Algae Escape
@@ -392,6 +419,7 @@ export const videos = [
     uploadedAt: '6+ years ago',
     duration: '11:05',
     description: 'Underwater adventure with the Octonauts crew.',
+    thumbnail: 'https://i.ytimg.com/vi/8c0d7K6m6MU/sddefault.jpg',
   },
 
   // 29. The Gruffalo - Read Aloud
@@ -406,6 +434,7 @@ export const videos = [
     uploadedAt: '8+ years ago',
     duration: '10:52',
     description: 'A cozy read aloud of The Gruffalo.',
+    thumbnail: 'https://i.ytimg.com/vi/s8sUPpPc8Ws/hqdefault.jpg',
   },
 
   // 30. Room on the Broom - Read Aloud
@@ -420,6 +449,7 @@ export const videos = [
     uploadedAt: '9+ years ago',
     duration: '8:52',
     description: 'A friendly read aloud of Room on the Broom.',
+    thumbnail: 'https://i.ytimg.com/vi/cWB0goTWZic/sddefault.jpg',
   },
 ];
 

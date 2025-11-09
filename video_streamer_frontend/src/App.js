@@ -14,14 +14,17 @@ function App() {
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
-    // Performance: preconnect to YouTube hosts
-    const links = [
-      { href: 'https://www.youtube.com' },
-      { href: 'https://i.ytimg.com' },
-      { href: 'https://s.ytimg.com' },
-    ].map(({ href }) => {
+    // Performance: preconnect to YouTube hosts and img CDN
+    const configs = [
+      { rel: 'preconnect', href: 'https://www.youtube.com' },
+      { rel: 'preconnect', href: 'https://i.ytimg.com' },
+      { rel: 'preconnect', href: 'https://img.youtube.com' },
+      { rel: 'dns-prefetch', href: 'https://i.ytimg.com' },
+      { rel: 'dns-prefetch', href: 'https://img.youtube.com' },
+    ];
+    const links = configs.map(({ rel, href }) => {
       const l = document.createElement('link');
-      l.rel = 'preconnect';
+      l.rel = rel;
       l.href = href;
       l.crossOrigin = 'anonymous';
       document.head.appendChild(l);

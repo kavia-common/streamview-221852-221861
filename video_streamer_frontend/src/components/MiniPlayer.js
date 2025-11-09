@@ -75,6 +75,8 @@ export default function MiniPlayer({ video, onClick, onClose }) {
             alt="Video poster"
             loading="lazy"
             decoding="async"
+            width={1280}
+            height={720}
             style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
           />
         )}
