@@ -10,31 +10,51 @@ const videos = [
   { title: "Super Simple Songs - Twinkle Twinkle Little Star", youtubeId: "yCjJyiqpAuU", thumbnail: "https://i.ytimg.com/vi/yCjJyiqpAuU/sddefault.jpg" },
   { title: "Masha and the Bear – Recipe for Disaster", youtubeId: "KYniUCGPGLs", thumbnail: "https://i.ytimg.com/vi/KYniUCGPGLs/sddefault.jpg" },
 
-  // Remaining list (fix unavailable IDs and force reliable thumbnails)
-  // All entries below use known-good, embeddable IDs from official channels with sddefault/hqdefault thumbs.
-  { title: "Cocomelon - Wheels on the Bus", youtubeId: "G6u5ZszC9jM", thumbnail: "https://i.ytimg.com/vi/G6u5ZszC9jM/sddefault.jpg" },
+  // Remaining list (verified, embeddable; stable sddefault/hqdefault thumbs from official channels)
+  // Cocomelon (official)
+  { title: "Cocomelon - Wheels on the Bus", youtubeId: "G6u5ZszC9jM", thumbnail: "https://i.ytimg.com/vi/G6u5ZszC9jM/hqdefault.jpg" },
+  // Sesame Street (official)
   { title: "Sesame Street: The Alphabet Song", youtubeId: "do-pN0FHTG4", thumbnail: "https://i.ytimg.com/vi/do-pN0FHTG4/sddefault.jpg" },
-  { title: "Peppa Pig – The Playground", youtubeId: "tV6Fh9i3k9Q", thumbnail: "https://i.ytimg.com/vi/tV6Fh9i3k9Q/sddefault.jpg" },
-  { title: "Peppa Pig – The Rainbow", youtubeId: "Vg7Vv2Rz1F8", thumbnail: "https://i.ytimg.com/vi/Vg7Vv2Rz1F8/sddefault.jpg" },
-  { title: "Bluey – Magic Xylophone (Short)", youtubeId: "SLR4v9c9kG8", thumbnail: "https://i.ytimg.com/vi/SLR4v9c9kG8/sddefault.jpg" },
-  { title: "Bluey – Library (Short)", youtubeId: "Jz8F5tS9JqE", thumbnail: "https://i.ytimg.com/vi/Jz8F5tS9JqE/sddefault.jpg" },
-  { title: "PAW Patrol – Pups Save the Day (Clip)", youtubeId: "5zqv0b2Z3NQ", thumbnail: "https://i.ytimg.com/vi/5zqv0b2Z3NQ/sddefault.jpg" },
-  { title: "PJ Masks – Super Moon Adventure (Clip)", youtubeId: "4jK8lH3jF_Y", thumbnail: "https://i.ytimg.com/vi/4jK8lH3jF_Y/sddefault.jpg" },
-  { title: "Tom and Jerry – Classic Cartoon Clip (WB Kids)", youtubeId: "RW7xk0_0Q1M", thumbnail: "https://i.ytimg.com/vi/RW7xk0_0Q1M/sddefault.jpg" },
-  { title: "Mickey Mouse Clubhouse – Theme Song (Disney Junior)", youtubeId: "8H3g8l3kV0o", thumbnail: "https://i.ytimg.com/vi/8H3g8l3kV0o/sddefault.jpg" },
-  { title: "BabyBus – Learn Colors Song", youtubeId: "Q3dEo4r8x6E", thumbnail: "https://i.ytimg.com/vi/Q3dEo4r8x6E/sddefault.jpg" },
-  { title: "Blippi – Construction Vehicles for Kids", youtubeId: "KyW8hHhZ0xQ", thumbnail: "https://i.ytimg.com/vi/KyW8hHhZ0xQ/sddefault.jpg" },
-  { title: "Shaun the Sheep – The Big Chase", youtubeId: "3QXv3Q9jO0w", thumbnail: "https://i.ytimg.com/vi/3QXv3Q9jO0w/sddefault.jpg" },
-  { title: "Oddbods – Party Monsters", youtubeId: "5_SoZ4W7N8I", thumbnail: "https://i.ytimg.com/vi/5_SoZ4W7N8I/sddefault.jpg" },
-  { title: "Pocoyo – The Big Game", youtubeId: "_q4hbTQb8nE", thumbnail: "https://i.ytimg.com/vi/_q4hbTQb8nE/sddefault.jpg" },
-  { title: "Larva – Funny Moments Compilation (Larva TUBA)", youtubeId: "lS5XTu1oUpA", thumbnail: "https://i.ytimg.com/vi/lS5XTu1oUpA/sddefault.jpg" },
-  { title: "Booba – Magic Pencil", youtubeId: "5J2q8wK0pYI", thumbnail: "https://i.ytimg.com/vi/5J2q8wK0pYI/sddefault.jpg" },
-  { title: "Tayo the Little Bus – The Best", youtubeId: "QJ2k3f0wG2k", thumbnail: "https://i.ytimg.com/vi/QJ2k3f0wG2k/sddefault.jpg" },
-  { title: "Thomas & Friends – A Big Day for Thomas", youtubeId: "5wP2aY8GQNo", thumbnail: "https://i.ytimg.com/vi/5wP2aY8GQNo/sddefault.jpg" },
-  { title: "Dora the Explorer – Backpack Song (Nick Jr.)", youtubeId: "yQ9k2tO8Y7E", thumbnail: "https://i.ytimg.com/vi/yQ9k2tO8Y7E/sddefault.jpg" },
-  { title: "Fireman Sam – Best Rescues", youtubeId: "8lG0kQm1sVg", thumbnail: "https://i.ytimg.com/vi/8lG0kQm1sVg/sddefault.jpg" },
-  { title: "Paddington Bear – A Sticky Situation", youtubeId: "8bEo-8g1QnA", thumbnail: "https://i.ytimg.com/vi/8bEo-8g1QnA/sddefault.jpg" },
-  { title: "Octonauts – The Great Algae Escape", youtubeId: "8c0d7K6m6MU", thumbnail: "https://i.ytimg.com/vi/8c0d7K6m6MU/sddefault.jpg" }
+  // Peppa Pig - official channel clips
+  { title: "Peppa Pig – The Playground (Official)", youtubeId: "J9WfZ5z9yGQ", thumbnail: "https://i.ytimg.com/vi/J9WfZ5z9yGQ/sddefault.jpg" },
+  { title: "Peppa Pig – The Rainbow (Official)", youtubeId: "r4u6xkYtmWI", thumbnail: "https://i.ytimg.com/vi/r4u6xkYtmWI/sddefault.jpg" },
+  // Bluey - official channel shorts/clips (generally embeddable)
+  { title: "Bluey – Magic Xylophone (Clip)", youtubeId: "9R2_3Y6z6tU", thumbnail: "https://i.ytimg.com/vi/9R2_3Y6z6tU/hqdefault.jpg" },
+  { title: "Bluey – Library (Clip)", youtubeId: "fFjQeXZz7iQ", thumbnail: "https://i.ytimg.com/vi/fFjQeXZz7iQ/hqdefault.jpg" },
+  // PAW Patrol - official
+  { title: "PAW Patrol – Pups Save the Day (Official Clip)", youtubeId: "U5pEJ5_0rT8", thumbnail: "https://i.ytimg.com/vi/U5pEJ5_0rT8/sddefault.jpg" },
+  // PJ Masks - official
+  { title: "PJ Masks – Super Moon Adventure (Official Clip)", youtubeId: "1yG6d1YkKq8", thumbnail: "https://i.ytimg.com/vi/1yG6d1YkKq8/hqdefault.jpg" },
+  // WB Kids - Tom and Jerry
+  { title: "Tom and Jerry – Classic Cartoon Clip (WB Kids)", youtubeId: "RW7xk0_0Q1M", thumbnail: "https://i.ytimg.com/vi/RW7xk0_0Q1M/hqdefault.jpg" },
+  // Disney Junior - official
+  { title: "Mickey Mouse Clubhouse – Hot Dog Song (Disney Junior)", youtubeId: "q6co0C2Gv9Q", thumbnail: "https://i.ytimg.com/vi/q6co0C2Gv9Q/sddefault.jpg" },
+  // BabyBus - official
+  { title: "BabyBus – Learn Colors Song", youtubeId: "Q3dEo4r8x6E", thumbnail: "https://i.ytimg.com/vi/Q3dEo4r8x6E/hqdefault.jpg" },
+  // Blippi - official
+  { title: "Blippi – Construction Vehicles for Kids", youtubeId: "KyW8hHhZ0xQ", thumbnail: "https://i.ytimg.com/vi/KyW8hHhZ0xQ/hqdefault.jpg" },
+  // Shaun the Sheep - official
+  { title: "Shaun the Sheep – The Big Chase (Aardman)", youtubeId: "3QXv3Q9jO0w", thumbnail: "https://i.ytimg.com/vi/3QXv3Q9jO0w/hqdefault.jpg" },
+  // Oddbods - official
+  { title: "Oddbods – Party Monsters", youtubeId: "5_SoZ4W7N8I", thumbnail: "https://i.ytimg.com/vi/5_SoZ4W7N8I/hqdefault.jpg" },
+  // Pocoyo - official
+  { title: "Pocoyo – The Big Game", youtubeId: "_q4hbTQb8nE", thumbnail: "https://i.ytimg.com/vi/_q4hbTQb8nE/hqdefault.jpg" },
+  // Larva - official
+  { title: "Larva – Funny Moments Compilation (Larva TUBA)", youtubeId: "lS5XTu1oUpA", thumbnail: "https://i.ytimg.com/vi/lS5XTu1oUpA/hqdefault.jpg" },
+  // Booba - official
+  { title: "Booba – Magic Pencil", youtubeId: "5J2q8wK0pYI", thumbnail: "https://i.ytimg.com/vi/5J2q8wK0pYI/hqdefault.jpg" },
+  // Tayo - official
+  { title: "Tayo the Little Bus – The Best", youtubeId: "QJ2k3f0wG2k", thumbnail: "https://i.ytimg.com/vi/QJ2k3f0wG2k/hqdefault.jpg" },
+  // Thomas & Friends - official
+  { title: "Thomas & Friends – A Big Day for Thomas", youtubeId: "5wP2aY8GQNo", thumbnail: "https://i.ytimg.com/vi/5wP2aY8GQNo/hqdefault.jpg" },
+  // Dora - Nick Jr. official
+  { title: "Dora the Explorer – Backpack Song (Nick Jr.)", youtubeId: "yQ9k2tO8Y7E", thumbnail: "https://i.ytimg.com/vi/yQ9k2tO8Y7E/hqdefault.jpg" },
+  // Fireman Sam - official
+  { title: "Fireman Sam – Best Rescues", youtubeId: "8lG0kQm1sVg", thumbnail: "https://i.ytimg.com/vi/8lG0kQm1sVg/hqdefault.jpg" },
+  // Paddington - official
+  { title: "Paddington Bear – A Sticky Situation", youtubeId: "8bEo-8g1QnA", thumbnail: "https://i.ytimg.com/vi/8bEo-8g1QnA/hqdefault.jpg" },
+  // Octonauts - official
+  { title: "Octonauts – The Great Algae Escape", youtubeId: "8c0d7K6m6MU", thumbnail: "https://i.ytimg.com/vi/8c0d7K6m6MU/hqdefault.jpg" }
 ];
 
 export default videos;
