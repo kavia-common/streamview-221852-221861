@@ -4,15 +4,21 @@ import VideoCard from './VideoCard';
 /**
  * PUBLIC_INTERFACE
  * VideoGrid renders a responsive grid of VideoCard items.
- * Only YouTube items are shown (safety filter).
+ * Supports mixed providers (YouTube + MP4); no provider-specific filtering here.
  */
 export default function VideoGrid({ items }) {
-  // Show both YouTube and MP4 sources in the grid
-  const list = Array.isArray(items) ? items.filter((v) => v && (v.sourceType === 'youtube' || v.sourceType === 'mp4')) : [];
+  // Accept both YouTube and MP4, ignore unknown/invalid items
+  const list = Array.isArray(items)
+    ? items.filter((v) => v && (v.sourceType === 'youtube' || v.sourceType === 'mp4'))
+    : [];
+
+  // Stable keys: prefer explicit id; fall back to youtubeId
+  const getKey = (v) => v?.id || v?.youtubeId;
+
   return (
     <div className="grid" role="list">
       {list.map((v) => (
-        <div key={v.id} role="listitem">
+        <div key={getKey(v)} role="listitem">
           <VideoCard video={v} />
         </div>
       ))}

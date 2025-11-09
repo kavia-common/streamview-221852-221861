@@ -19,7 +19,12 @@ export default function VideoCard({ video, compact = false }) {
 
   const { url, loaded, isResolving, onError, onLoad } = useThumbnail(video, {
     fallback: '/assets/thumbnail-fallback.jpg',
-    onThumbnailsExhausted: () => replaceWithBackup(video?.youtubeId || video?.id),
+    onThumbnailsExhausted: () => {
+      // Only replace curated YouTube items via backup; MP4 posters should not trigger catalog swap
+      if (video?.sourceType === 'youtube') {
+        replaceWithBackup(video?.youtubeId || video?.id);
+      }
+    },
   });
 
   useEffect(() => {

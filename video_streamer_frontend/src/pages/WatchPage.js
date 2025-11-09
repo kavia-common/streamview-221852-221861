@@ -16,9 +16,9 @@ export default function WatchPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { setShowMini } = useContext(PlayerContext);
-  const { videos } = useContext(CatalogContext);
+  const { mixedVideos } = useContext(CatalogContext);
 
-  const list = Array.isArray(videos) ? videos : [];
+  const list = Array.isArray(mixedVideos) ? mixedVideos : [];
   const video = useMemo(() => list.find((v) => v.id === id) || null, [list, id]);
 
   const { nextItem } = useMemo(() => {

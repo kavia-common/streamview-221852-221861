@@ -30,9 +30,11 @@ import backupRaw from '../data/backupVideos';
  * - sv:thumbfail:<id> = "1" if item had two failing thumbnails at runtime (advisory)
  */
 
-// PUBLIC_INTERFACE
+ // PUBLIC_INTERFACE
 export const CatalogContext = createContext({
-  videos: [],
+  videos: [],              // curated YouTube set (exactly 30 when ready)
+  mixedVideos: [],         // curated YouTube + public MP4 set
+  counts: { youtube: 0, mp4: 0, total: 0 },
   ready: false,
   replaceWithBackup: (_id) => {},
   refreshCatalog: () => {},
@@ -64,6 +66,7 @@ function dlog(...args) {
 
 // Helpers: normalize raw dataset items into catalog format
 function normalizeItem(v, idx) {
+  // YouTube item normalization
   const yt = v.youtubeId;
   const url = `https://www.youtube.com/watch?v=${yt}`;
   const primary = v.thumbnail || `https://i.ytimg.com/vi/${yt}/sddefault.jpg`;
@@ -89,6 +92,32 @@ function normalizeItem(v, idx) {
     embeddable: v.embeddable === true,
     embed_ok: false, // will be set after preflight/acceptance
     _rank: idx, // deterministic fill ordering
+  };
+}
+
+// Normalize MP4 public clips (Pexels/Pixabay) from the same dataset
+function normalizeMp4Item(v, idx) {
+  // v.id is already present and unique in data/videos.js for mp4 items
+  return {
+    id: v.id,
+    title: v.title,
+    sourceType: 'mp4',
+    url: v.mp4Url,
+    mp4Url: v.mp4Url,
+    youtubeId: undefined,
+    channel: v.channel || '',
+    views: v.views || '',
+    uploadedAt: v.uploadedAt || '',
+    duration: v.duration || '',
+    description: v.description || '',
+    attribution: v.attribution || '',
+    // Respect provided poster thumbnails; no YT fallback here
+    thumbnail: v.thumbnail || v.altThumbnail || '',
+    altThumbnail: v.altThumbnail || v.thumbnail || '',
+    // MP4 clips do not require oEmbed preflight
+    embeddable: true,
+    embed_ok: true,
+    _rank: idx,
   };
 }
 
@@ -236,16 +265,32 @@ function persistCatalog(items) {
 }
 
 export function CatalogProvider({ children }) {
-  const primary = useMemo(
-    () => (Array.isArray(primaryRaw) ? primaryRaw.map(normalizeItem) : []),
+  // Split primaryRaw into two: YouTube curated and MP4 public clips
+  const primaryYouTubeRaw = useMemo(
+    () => (Array.isArray(primaryRaw) ? primaryRaw.filter((v) => v && v.sourceType !== 'mp4') : []),
     []
+  );
+  const mp4Raw = useMemo(
+    () => (Array.isArray(primaryRaw) ? primaryRaw.filter((v) => v && v.sourceType === 'mp4') : []),
+    []
+  );
+
+  const primary = useMemo(
+    () => primaryYouTubeRaw.map(normalizeItem),
+    [primaryYouTubeRaw]
+  );
+  const publicMp4 = useMemo(
+    () => mp4Raw.map(normalizeMp4Item),
+    [mp4Raw]
   );
   const backup = useMemo(
     () => (Array.isArray(backupRaw) ? backupRaw.map(normalizeItem) : []),
     []
   );
 
-  const [videos, setVideos] = useState([]);
+  const [videos, setVideos] = useState([]); // curated 30 YouTube catalog
+  const [mixedVideos, setMixedVideos] = useState([]); // curated + mp4
+  const [counts, setCounts] = useState({ youtube: 0, mp4: 0, total: 0 });
   const [ready, setReady] = useState(false);
   const buildingRef = useRef(false);
 
@@ -339,8 +384,14 @@ export function CatalogProvider({ children }) {
 
     if (final.length === 30) {
       // Publish atomically after reaching 30
-      setVideos(final.slice(0, 30));
-      persistCatalog(final.slice(0, 30));
+      const curated = final.slice(0, 30);
+      setVideos(curated);
+      persistCatalog(curated);
+      // Build mixed list (curated + public MP4)
+      const mp4List = publicMp4;
+      const mixed = [...curated, ...mp4List];
+      setMixedVideos(mixed);
+      setCounts({ youtube: curated.length, mp4: mp4List.length, total: mixed.length });
       setReady(true);
     } else {
       // Never publish partial lists
@@ -448,10 +499,16 @@ export function CatalogProvider({ children }) {
     const final = repaired.slice(0, 30);
 
     if (final.length === 30) {
-      setVideos(final);
-      persistCatalog(final);
+      const curated = final;
+      setVideos(curated);
+      persistCatalog(curated);
+      // Refresh mixed list alongside curated updates
+      const mp4List = publicMp4;
+      const mixed = [...curated, ...mp4List];
+      setMixedVideos(mixed);
+      setCounts({ youtube: curated.length, mp4: mp4List.length, total: mixed.length });
       setReady(true);
-      dlog('verifyAndRepair applied:', { changed, length: final.length });
+      dlog('verifyAndRepair applied:', { changed, length: curated.length });
     } else {
       dlog('verifyAndRepair could not maintain 30 items; deferring publish and triggering full rebuild');
       // Keep the current published list as-is; do not reduce count
@@ -462,7 +519,11 @@ export function CatalogProvider({ children }) {
   useEffect(() => {
     const saved = readSavedCatalog();
     if (saved && saved.items && Array.isArray(saved.items) && saved.items.length === 30) {
-      setVideos(saved.items);
+      const curated = saved.items;
+      setVideos(curated);
+      const mixed = [...curated, ...publicMp4];
+      setMixedVideos(mixed);
+      setCounts({ youtube: curated.length, mp4: publicMp4.length, total: mixed.length });
       setReady(true);
       // Verify in background without disrupting UI
       verifyAndRepair();
@@ -545,11 +606,13 @@ export function CatalogProvider({ children }) {
   const value = useMemo(
     () => ({
       videos,
+      mixedVideos,
+      counts,
       ready,
       replaceWithBackup,
       refreshCatalog,
     }),
-    [videos, ready, replaceWithBackup, refreshCatalog]
+    [videos, mixedVideos, counts, ready, replaceWithBackup, refreshCatalog]
   );
 
   return <CatalogContext.Provider value={value}>{children}</CatalogContext.Provider>;
