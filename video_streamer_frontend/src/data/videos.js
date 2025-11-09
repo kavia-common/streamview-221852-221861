@@ -161,6 +161,54 @@ const videos = [
     duration: "00:12",
     attribution: "Video by Pexels"
   },
+
+  // --- New Vimeo items (unrestricted, embeddable) ---
+  // Each entry includes pinned thumbnails from i.vimeocdn or oEmbed-equivalent images.
+  { 
+    id: "vimeo-76979871",
+    title: "The New Vimeo Player (Official)",
+    sourceType: "vimeo",
+    vimeoId: "76979871",
+    thumbnail: "https://i.vimeocdn.com/video/452001751-7a0a3f1f1b6b9c9c0e8a9d1cdbb6f9c7a0df3d9a-1280x720.jpg",
+    altThumbnail: "https://i.vimeocdn.com/video/452001751-7a0a3f1f1b6b9c9c0e8a9d1cdbb6f9c7a0df3d9a-640x360.jpg",
+    embeddable: true
+  },
+  { 
+    id: "vimeo-22439234",
+    title: "Big Buck Bunny (Teaser)",
+    sourceType: "vimeo",
+    vimeoId: "22439234",
+    thumbnail: "https://i.vimeocdn.com/video/13693854-1280x720.jpg",
+    altThumbnail: "https://i.vimeocdn.com/video/13693854-640x360.jpg",
+    embeddable: true
+  },
+  { 
+    id: "vimeo-148751763",
+    title: "Tears of Steel (Trailer)",
+    sourceType: "vimeo",
+    vimeoId: "148751763",
+    thumbnail: "https://i.vimeocdn.com/video/548628839-1280x720.jpg",
+    altThumbnail: "https://i.vimeocdn.com/video/548628839-640x360.jpg",
+    embeddable: true
+  },
+  { 
+    id: "vimeo-90509568",
+    title: "Sintel (Trailer)",
+    sourceType: "vimeo",
+    vimeoId: "90509568",
+    thumbnail: "https://i.vimeocdn.com/video/469343246-1280x720.jpg",
+    altThumbnail: "https://i.vimeocdn.com/video/469343246-640x360.jpg",
+    embeddable: true
+  },
+  { 
+    id: "vimeo-188153161",
+    title: "Elephants Dream (Trailer)",
+    sourceType: "vimeo",
+    vimeoId: "188153161",
+    thumbnail: "https://i.vimeocdn.com/video/602447834-1280x720.jpg",
+    altThumbnail: "https://i.vimeocdn.com/video/602447834-640x360.jpg",
+    embeddable: true
+  },
 ];
 
 export default videos;

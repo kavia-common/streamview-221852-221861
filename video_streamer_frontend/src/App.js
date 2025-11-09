@@ -21,6 +21,11 @@ function App() {
       { rel: 'preconnect', href: 'https://img.youtube.com' },
       { rel: 'dns-prefetch', href: 'https://i.ytimg.com' },
       { rel: 'dns-prefetch', href: 'https://img.youtube.com' },
+
+      { rel: 'preconnect', href: 'https://player.vimeo.com' },
+      { rel: 'preconnect', href: 'https://i.vimeocdn.com' },
+      { rel: 'dns-prefetch', href: 'https://player.vimeo.com' },
+      { rel: 'dns-prefetch', href: 'https://i.vimeocdn.com' },
     ];
     const links = configs.map(({ rel, href }) => {
       const l = document.createElement('link');

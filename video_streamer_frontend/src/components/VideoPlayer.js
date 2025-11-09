@@ -62,30 +62,56 @@ export default function VideoPlayer({ video, onEnded, onIntersectChange, nextVid
 
   const isYouTube = video?.sourceType === 'youtube';
   const isMp4 = video?.sourceType === 'mp4';
+  const isVimeo = video?.sourceType === 'vimeo';
 
   // build YouTube embed params and url
   const embed = useMemo(() => {
-    if (!isYouTube) return null;
-    const id = video?.youtubeId;
-    const params = new URLSearchParams({
-      rel: '0',
-      modestbranding: '1',
-      autoplay: autoplayWanted ? '1' : '0',
-      playsinline: '1',
-      fs: '1',
-    });
-    return {
-      src: `https://www.youtube.com/embed/${id}?${params.toString()}`,
-      allow:
-        'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen',
-      providerId: id,
-    };
-  }, [isYouTube, video?.youtubeId, autoplayWanted]);
+    if (isYouTube) {
+      const id = video?.youtubeId;
+      const params = new URLSearchParams({
+        rel: '0',
+        modestbranding: '1',
+        autoplay: autoplayWanted ? '1' : '0',
+        playsinline: '1',
+        fs: '1',
+      });
+      return {
+        provider: 'youtube',
+        src: `https://www.youtube.com/embed/${id}?${params.toString()}`,
+        allow:
+          'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen',
+        providerId: id,
+      };
+    }
+    if (isVimeo) {
+      const id = video?.vimeoId;
+      const params = new URLSearchParams({
+        autoplay: autoplayWanted ? '1' : '0',
+        muted: autoplayWanted ? '1' : '0',
+        title: '0',
+        byline: '0',
+        portrait: '0',
+        playsinline: '1',
+        dnt: '1',
+      });
+      return {
+        provider: 'vimeo',
+        src: `https://player.vimeo.com/video/${id}?${params.toString()}`,
+        allow:
+          'autoplay; fullscreen; picture-in-picture; clipboard-write',
+        providerId: id,
+      };
+    }
+    return null;
+  }, [isYouTube, isVimeo, video?.youtubeId, video?.vimeoId, autoplayWanted]);
 
   // Mark provider type in context and set active handle
   useEffect(() => {
     if (isYouTube) {
       setProviderType('youtube');
+      setActiveHandle(iframeRef.current);
+    } else if (isVimeo) {
+      setProviderType('vimeo');
       setActiveHandle(iframeRef.current);
     } else if (isMp4) {
       setProviderType('mp4');
@@ -156,7 +182,7 @@ export default function VideoPlayer({ video, onEnded, onIntersectChange, nextVid
     setAutoplayBlocked(false);
     setAutoplayWanted(true);
     // YouTube: toggle to refresh iframe src
-    if (isYouTube) {
+    if (isYouTube || isVimeo) {
       setTimeout(() => setAutoplayWanted(false), 0);
     } else if (isMp4 && html5Ref.current) {
       try { html5Ref.current.muted = false; } catch {}
@@ -211,7 +237,7 @@ export default function VideoPlayer({ video, onEnded, onIntersectChange, nextVid
   return (
     <div className="player-wrap" ref={containerRef}>
       <div className="player-area" aria-label="Video player area">
-        {isYouTube && (
+        {(isYouTube || isVimeo) && (
           <iframe
             ref={iframeRef}
             title={video.title}
@@ -221,7 +247,7 @@ export default function VideoPlayer({ video, onEnded, onIntersectChange, nextVid
             frameBorder="0"
           />
         )}
-        {!isYouTube && isMp4 && (
+        {!isYouTube && !isVimeo && isMp4 && (
           <video
             ref={html5Ref}
             src={video.mp4Url}

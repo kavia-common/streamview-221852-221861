@@ -9,7 +9,7 @@ import VideoCard from './VideoCard';
 export default function VideoGrid({ items }) {
   // Accept both YouTube and MP4, ignore unknown/invalid items
   const list = Array.isArray(items)
-    ? items.filter((v) => v && (v.sourceType === 'youtube' || v.sourceType === 'mp4'))
+    ? items.filter((v) => v && (v.sourceType === 'youtube' || v.sourceType === 'mp4' || v.sourceType === 'vimeo'))
     : [];
 
   // Stable keys: prefer explicit id; fall back to youtubeId

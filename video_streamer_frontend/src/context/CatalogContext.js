@@ -4,18 +4,18 @@ import backupRaw from '../data/backupVideos';
 
 /**
  * PUBLIC_INTERFACE
- * CatalogContext provides a guaranteed-availability catalog of 30 YouTube kids videos.
+ * CatalogContext provides a guaranteed-availability catalog of 30 YouTube kids videos plus mixed public MP4 and Vimeo items.
  *
  * Resilience & Stability details:
- * - Atomic resolution: builds the full 30-item array in memory before publishing to state.
- * - oEmbed preflight with tri-state: true | false | 'u' (unknown). Timeouts and network/CORS issues are treated as 'unknown' (not false).
- *   Unknown is allowed in the final list (we only exclude when explicitly unembeddable === false).
- *   Unknowns are retried in the background to settle caches without disrupting the UI.
- * - Backup fulfillment: if a primary item is unembeddable, pull from the vetted backup pool until all 30 slots are filled.
- * - Runtime replacement: consumers can call replaceWithBackup(youtubeId) if strict thumbnail checks fail; the item is swapped immediately
- *   without reducing the total count. Replacements update persistence and top-7 ordering if applicable.
+ * - Atomic resolution: builds the full 30-item YouTube array in memory before publishing to state; mixed list appends MP4 and Vimeo.
+ * - oEmbed preflight with tri-state: true | false | 'u' (unknown).
+ *   - YouTube: https://www.youtube.com/oembed?url=...
+ *   - Vimeo: https://vimeo.com/api/oembed.json?url=https://vimeo.com/<id>
+ *   Timeouts/network errors => 'u' (allowed). Only explicit false are excluded/replaced.
+ * - Backup fulfillment: if a primary YouTube item is unembeddable, pull from the vetted backup pool until all 30 slots are filled.
+ * - Runtime replacement: consumers can call replaceWithBackup(youtubeId) for YouTube items on thumb exhaustion.
  * - Persistence: writes once when a stable 30-item list is finalized. Uses versioned keys to safely bust stale caches.
- * - Top-7 ordering: preserves user’s last known top-7 ordering (if present) otherwise uses the dataset’s first 7.
+ * - Top-7 ordering: preserves last known top-7 ordering for YouTube (if present) otherwise uses dataset’s first 7.
  *
  * Exposed API:
  * - videos: Array<CatalogItem>
@@ -30,11 +30,11 @@ import backupRaw from '../data/backupVideos';
  * - sv:thumbfail:<id> = "1" if item had two failing thumbnails at runtime (advisory)
  */
 
- // PUBLIC_INTERFACE
+// PUBLIC_INTERFACE
 export const CatalogContext = createContext({
   videos: [],              // curated YouTube set (exactly 30 when ready)
-  mixedVideos: [],         // curated YouTube + public MP4 set
-  counts: { youtube: 0, mp4: 0, total: 0 },
+  mixedVideos: [],         // curated YouTube + public MP4 + Vimeo set
+  counts: { youtube: 0, mp4: 0, vimeo: 0, total: 0 },
   ready: false,
   replaceWithBackup: (_id) => {},
   refreshCatalog: () => {},
@@ -50,6 +50,7 @@ const KEYS = {
   oembedV2: (id) => `sv:oembed:${id}:${STORAGE_VERSION}`,
   oembedV1: (id) => `sv:oembed:${id}`, // legacy (read-only fallback)
   thumbFail: (id) => `sv:thumbfail:${id}`,
+  vimeoOEmbedV2: (id) => `sv:oembed:vimeo:${id}:${STORAGE_VERSION}`,
 };
 
 // Dev logging gate
@@ -92,6 +93,28 @@ function normalizeItem(v, idx) {
     embeddable: v.embeddable === true,
     embed_ok: false, // will be set after preflight/acceptance
     _rank: idx, // deterministic fill ordering
+  };
+}
+
+// Normalize Vimeo items from dataset
+function normalizeVimeoItem(v, idx) {
+  const id = v.vimeoId || v.id || '';
+  return {
+    id: v.id || `vimeo-${id}`,
+    title: v.title,
+    sourceType: 'vimeo',
+    url: `https://vimeo.com/${id}`,
+    vimeoId: id,
+    channel: v.channel || '',
+    views: v.views || '',
+    uploadedAt: v.uploadedAt || '',
+    duration: v.duration || '',
+    description: v.description || '',
+    thumbnail: v.thumbnail || v.altThumbnail || '',
+    altThumbnail: v.altThumbnail || v.thumbnail || '',
+    embeddable: v.embeddable === true,
+    embed_ok: true, // will be set/confirmed via Vimeo oEmbed if needed
+    _rank: idx,
   };
 }
 
@@ -226,6 +249,70 @@ async function preflightOEmbed(id, externalSignal) {
   }
 }
 
+// Vimeo oEmbed cache helpers
+function readVimeoEmbedCache(id) {
+  try {
+    const raw = localStorage.getItem(KEYS.vimeoOEmbedV2(id));
+    if (raw) {
+      const obj = JSON.parse(raw);
+      if (!obj || obj.exp == null) return null;
+      if (Date.now() > obj.exp) {
+        localStorage.removeItem(KEYS.vimeoOEmbedV2(id));
+        return null;
+      }
+      if (obj.ok === true) return true;
+      if (obj.ok === false) return false;
+      if (obj.ok === 'u') return 'u';
+      return null;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+function writeVimeoEmbedCache(id, ok) {
+  try {
+    const ttl = ok === 'u' ? 6 * 60 * 60 * 1000 : 7 * 24 * 60 * 60 * 1000;
+    const exp = Date.now() + ttl;
+    localStorage.setItem(KEYS.vimeoOEmbedV2(id), JSON.stringify({ ok, exp, v: STORAGE_VERSION }));
+  } catch {
+    // ignore
+  }
+}
+
+/**
+ * PUBLIC_INTERFACE
+ * Perform a Vimeo oEmbed preflight with a timeout.
+ * Returns true | false | 'u'.
+ */
+async function preflightVimeoOEmbed(id, externalSignal) {
+  const cached = readVimeoEmbedCache(id);
+  if (cached !== null) return cached;
+
+  const controller = new AbortController();
+  const to = setTimeout(() => controller.abort(), 1200);
+  try {
+    const url = `https://vimeo.com/api/oembed.json?url=${encodeURIComponent(`https://vimeo.com/${id}`)}`;
+    const resp = await fetch(url, {
+      method: 'GET',
+      headers: { Accept: 'application/json' },
+      signal: externalSignal || controller.signal,
+      cache: 'default',
+    });
+    clearTimeout(to);
+    if (resp.ok) {
+      writeVimeoEmbedCache(id, true);
+      return true;
+    }
+    writeVimeoEmbedCache(id, false);
+    return false;
+  } catch {
+    clearTimeout(to);
+    writeVimeoEmbedCache(id, 'u');
+    return 'u';
+  }
+}
+
 function readSavedCatalog() {
   const objV2 = readJSON(KEYS.catalogFinalV2);
   if (objV2 && Array.isArray(objV2.items) && objV2.exp && Date.now() <= objV2.exp) {
@@ -265,13 +352,26 @@ function persistCatalog(items) {
 }
 
 export function CatalogProvider({ children }) {
-  // Split primaryRaw into two: YouTube curated and MP4 public clips
+  // Split primaryRaw into two: YouTube curated and MP4/Vimeo public clips
   const primaryYouTubeRaw = useMemo(
-    () => (Array.isArray(primaryRaw) ? primaryRaw.filter((v) => v && v.sourceType !== 'mp4') : []),
+    () =>
+      Array.isArray(primaryRaw)
+        ? primaryRaw.filter(
+            (v) =>
+              v &&
+              (v.sourceType === undefined ||
+                v.sourceType === null ||
+                v.sourceType === 'youtube')
+          )
+        : [],
     []
   );
   const mp4Raw = useMemo(
     () => (Array.isArray(primaryRaw) ? primaryRaw.filter((v) => v && v.sourceType === 'mp4') : []),
+    []
+  );
+  const vimeoRaw = useMemo(
+    () => (Array.isArray(primaryRaw) ? primaryRaw.filter((v) => v && v.sourceType === 'vimeo') : []),
     []
   );
 
@@ -283,14 +383,18 @@ export function CatalogProvider({ children }) {
     () => mp4Raw.map(normalizeMp4Item),
     [mp4Raw]
   );
+  const publicVimeo = useMemo(
+    () => vimeoRaw.map(normalizeVimeoItem),
+    [vimeoRaw]
+  );
   const backup = useMemo(
     () => (Array.isArray(backupRaw) ? backupRaw.map(normalizeItem) : []),
     []
   );
 
   const [videos, setVideos] = useState([]); // curated 30 YouTube catalog
-  const [mixedVideos, setMixedVideos] = useState([]); // curated + mp4
-  const [counts, setCounts] = useState({ youtube: 0, mp4: 0, total: 0 });
+  const [mixedVideos, setMixedVideos] = useState([]); // curated + mp4 + vimeo
+  const [counts, setCounts] = useState({ youtube: 0, mp4: 0, total: 0 }); // counts (vimeo added on publish)
   const [ready, setReady] = useState(false);
   const buildingRef = useRef(false);
 
@@ -375,23 +479,24 @@ export function CatalogProvider({ children }) {
       pushIfAllowed(final, b);
     }
 
-    const counts = {
+    const countsDbg = {
       true: Object.values(embedOk).filter((v) => v === true).length,
       false: Object.values(embedOk).filter((v) => v === false).length,
       unknown: Object.values(embedOk).filter((v) => v === 'u').length,
     };
-    dlog('oEmbed preflight counts =>', counts, 'final length', final.length);
+    dlog('oEmbed preflight counts =>', countsDbg, 'final length', final.length);
 
     if (final.length === 30) {
       // Publish atomically after reaching 30
       const curated = final.slice(0, 30);
       setVideos(curated);
       persistCatalog(curated);
-      // Build mixed list (curated + public MP4)
+      // Build mixed list (curated + public MP4 + Vimeo)
       const mp4List = publicMp4;
-      const mixed = [...curated, ...mp4List];
+      const vimeoList = publicVimeo;
+      const mixed = [...curated, ...mp4List, ...vimeoList];
       setMixedVideos(mixed);
-      setCounts({ youtube: curated.length, mp4: mp4List.length, total: mixed.length });
+      setCounts({ youtube: curated.length, mp4: mp4List.length, vimeo: vimeoList.length, total: mixed.length });
       setReady(true);
     } else {
       // Never publish partial lists
@@ -409,9 +514,17 @@ export function CatalogProvider({ children }) {
             await preflightOEmbed(item.youtubeId);
           }
         }
+        // Kick off light cache warm for Vimeo items (non-blocking)
+        for (const v of publicVimeo) {
+          const cached = readVimeoEmbedCache(v.vimeoId);
+          if (cached === null || cached === 'u') {
+            // eslint-disable-next-line no-await-in-loop
+            await preflightVimeoOEmbed(v.vimeoId);
+          }
+        }
       })();
     }, 0);
-  }, [primary, backup]);
+  }, [primary, backup]); // publicMp4/publicVimeo are constant from dataset; safe to omit
 
   // Verify and repair a saved catalog in the background without reducing count
   const verifyAndRepair = useCallback(async () => {
@@ -504,9 +617,10 @@ export function CatalogProvider({ children }) {
       persistCatalog(curated);
       // Refresh mixed list alongside curated updates
       const mp4List = publicMp4;
-      const mixed = [...curated, ...mp4List];
+      const vimeoList = publicVimeo;
+      const mixed = [...curated, ...mp4List, ...vimeoList];
       setMixedVideos(mixed);
-      setCounts({ youtube: curated.length, mp4: mp4List.length, total: mixed.length });
+      setCounts({ youtube: curated.length, mp4: mp4List.length, vimeo: vimeoList.length, total: mixed.length });
       setReady(true);
       dlog('verifyAndRepair applied:', { changed, length: curated.length });
     } else {
@@ -514,16 +628,16 @@ export function CatalogProvider({ children }) {
       // Keep the current published list as-is; do not reduce count
       buildFinal();
     }
-  }, [buildFinal, primary, backup]);
+  }, [buildFinal, primary, backup]); // public lists safe to omit
 
   useEffect(() => {
     const saved = readSavedCatalog();
     if (saved && saved.items && Array.isArray(saved.items) && saved.items.length === 30) {
       const curated = saved.items;
       setVideos(curated);
-      const mixed = [...curated, ...publicMp4];
+      const mixed = [...curated, ...publicMp4, ...publicVimeo];
       setMixedVideos(mixed);
-      setCounts({ youtube: curated.length, mp4: publicMp4.length, total: mixed.length });
+      setCounts({ youtube: curated.length, mp4: publicMp4.length, vimeo: publicVimeo.length, total: mixed.length });
       setReady(true);
       // Verify in background without disrupting UI
       verifyAndRepair();

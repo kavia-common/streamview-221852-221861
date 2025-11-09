@@ -42,8 +42,24 @@ export default function MiniPlayer({ video, onClick, onClose }) {
           'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share',
       };
     }
+    if (video.sourceType === 'vimeo') {
+      const id = video.vimeoId;
+      const params = new URLSearchParams({
+        autoplay: '0',
+        muted: '1',
+        title: '0',
+        byline: '0',
+        portrait: '0',
+        playsinline: '1',
+        dnt: '1',
+      });
+      return {
+        src: `https://player.vimeo.com/video/${id}?${params.toString()}`,
+        allow: 'autoplay; fullscreen; picture-in-picture; clipboard-write',
+      };
+    }
     return null;
-  }, [video && (video.youtubeId || video.id)]);
+  }, [video && (video.youtubeId || video.vimeoId || video.id)]);
 
   if (!showMini) return null;
 
@@ -58,7 +74,7 @@ export default function MiniPlayer({ video, onClick, onClose }) {
       onKeyDown={(e) => e.key === 'Enter' && onClick()}
     >
       <div className="mini-video" style={{ position: 'relative' }}>
-        {video?.sourceType === 'youtube' ? (
+        {video?.sourceType === 'youtube' || video?.sourceType === 'vimeo' ? (
           <iframe
             title={`${video.title} mini`}
             src={iframeData?.src}

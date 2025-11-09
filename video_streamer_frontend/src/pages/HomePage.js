@@ -63,7 +63,7 @@ export default function HomePage() {
         />
         {ready && (
           <div className="sub" aria-live="polite" title="Catalog counts">
-            Total: {counts?.total || filtered.length} • YT: {counts?.youtube || 0} • MP4: {counts?.mp4 || 0}
+            Total: {counts?.total || filtered.length} • YT: {counts?.youtube || 0} • MP4: {counts?.mp4 || 0} • Vimeo: {counts?.vimeo || 0}
           </div>
         )}
       </div>
