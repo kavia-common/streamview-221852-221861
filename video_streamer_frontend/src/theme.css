@@ -271,6 +271,7 @@ a { color: inherit; text-decoration: none; }
   width: 320px;
   max-width: calc(100% - 32px);
   aspect-ratio: 16/9;
+  min-height: 180px; /* ensure visible height on small screens */
   border-radius: 12px;
   overflow: hidden;
   background: #000;
@@ -279,13 +280,16 @@ a { color: inherit; text-decoration: none; }
 }
 html[dir="rtl"] .mini-player { left: 16px; right: auto; }
 .mini-video { position: relative; width: 100%; height: 100%; }
+.mini-video iframe, .mini-video video, .mini-video img { width: 100%; height: 100%; display: block; object-fit: cover; }
 .mini-overlay {
   position: absolute; inset: 0;
   display: flex; flex-direction: column; justify-content: space-between;
   background: linear-gradient(180deg, rgba(0,0,0,0.1), rgba(0,0,0,0.55));
   color: #fff;
   padding: 8px;
+  pointer-events: none; /* allow clicks to pass through except on buttons */
 }
+.mini-overlay .mini-controls, .mini-overlay .mini-btn { pointer-events: auto; }
 .mini-title {
   font-size: 12px;
   font-weight: 600;

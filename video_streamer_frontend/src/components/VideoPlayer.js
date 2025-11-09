@@ -1,5 +1,6 @@
 import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { PlayerContext } from '../context/PlayerContext';
+import { useThumbnail } from '../utils/useThumbnail';
 
 /**
  * PUBLIC_INTERFACE
@@ -17,7 +18,16 @@ export default function VideoPlayer({ video, onEnded, onIntersectChange, nextVid
   const containerRef = useRef(null);
   const [pipSupported, setPipSupported] = useState(false);
   const [pipStatus, setPipStatus] = useState('');
-  const { autoplay, toggleAutoplay, setShowMini, mainVideoRef, setPlaying } = useContext(PlayerContext);
+  const {
+    autoplay,
+    toggleAutoplay,
+    setShowMini,
+    mainVideoRef,
+    setPlaying,
+    setProviderType,
+    setCurrentTime,
+    setActiveHandle,
+  } = useContext(PlayerContext);
 
   // countdown state for autoplay
   const [countdown, setCountdown] = useState(null); // number or null
@@ -28,6 +38,9 @@ export default function VideoPlayer({ video, onEnded, onIntersectChange, nextVid
   const [isPlaying, setIsPlaying] = useState(false);
   const [autoplayWanted, setAutoplayWanted] = useState(!!shouldAutoplay);
   const [autoplayBlocked, setAutoplayBlocked] = useState(false);
+
+  // Poster/thumbnail resolver for MP4
+  const { url: posterUrl } = useThumbnail(video || {}, { fallback: '/assets/thumbnail-fallback.jpg' });
 
   useEffect(() => {
     // Detect PiP support for MP4
@@ -66,7 +79,6 @@ export default function VideoPlayer({ video, onEnded, onIntersectChange, nextVid
         video.url.match(/(?:v=|\.be\/)([A-Za-z0-9_-]{6,})/) ||
         video.url.match(/youtube\.com\/shorts\/([A-Za-z0-9_-]{6,})/);
       const id = match ? match[1] : '';
-      // Add autoplay=1 but rely on policies; mute is often required. We do not force mute, we show prompt if blocked.
       const params = new URLSearchParams({
         rel: '0',
         modestbranding: '1',
@@ -77,6 +89,7 @@ export default function VideoPlayer({ video, onEnded, onIntersectChange, nextVid
         src: `https://www.youtube.com/embed/${id}?${params.toString()}`,
         allow:
           'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share',
+        providerId: id,
       };
     }
     if (video.sourceType === 'vimeo') {
@@ -92,6 +105,7 @@ export default function VideoPlayer({ video, onEnded, onIntersectChange, nextVid
       return {
         src: `https://player.vimeo.com/video/${id}?${params.toString()}`,
         allow: 'autoplay; fullscreen; picture-in-picture',
+        providerId: id,
       };
     }
     return null;
@@ -129,18 +143,17 @@ export default function VideoPlayer({ video, onEnded, onIntersectChange, nextVid
     await tryEnterPipForIframe();
   };
 
-  // Handle natural end for MP4; for embedded sources we cannot reliably detect end, so overlay is manual
+  // Handle natural end for MP4; for embedded sources we cannot reliably detect end
   const onMp4Ended = (e) => {
     if (!autoplay) {
       if (onEnded) onEnded(e);
       return;
     }
-    // start countdown then trigger onEnded after COUNTDOWN_SECS unless canceled
     setCountdown(COUNTDOWN_SECS);
     setCountdownActive(true);
   };
 
-  // Countdown effect
+  // Countdown for autoplay next
   useEffect(() => {
     if (!countdownActive) return;
     if (countdown === null) return;
@@ -164,6 +177,18 @@ export default function VideoPlayer({ video, onEnded, onIntersectChange, nextVid
     if (onEnded) onEnded({ type: 'playnow' });
   };
 
+  // Sync provider type, active handle, and currentTime
+  useEffect(() => {
+    setProviderType(video?.sourceType || null);
+    if (video?.sourceType === 'mp4') {
+      const el = videoRef.current;
+      setActiveHandle(el || null);
+    } else {
+      setActiveHandle(null); // iframe is created in render; we don't hold SDK instances in this template
+    }
+    setCurrentTime(0);
+  }, [video?.id, video?.sourceType, setProviderType, setActiveHandle, setCurrentTime]);
+
   // Attempt autoplay for MP4 on mount/src change and bind shared ref/state
   useEffect(() => {
     if (video.sourceType !== 'mp4') {
@@ -182,13 +207,20 @@ export default function VideoPlayer({ video, onEnded, onIntersectChange, nextVid
 
     const onPlay = () => { setIsPlaying(true); setPlaying(true); };
     const onPause = () => { setIsPlaying(false); setPlaying(false); };
+    const onTime = () => {
+      try {
+        setCurrentTime(el.currentTime || 0);
+      } catch { /* noop */ }
+    };
     el.addEventListener('play', onPlay);
     el.addEventListener('pause', onPause);
+    el.addEventListener('timeupdate', onTime);
 
-    // robust autoplay attempt
-    const tryPlay = async () => {
+    // robust autoplay attempt with safety timeout and muted retry
+    const tryPlay = async (mutedFirst = false) => {
       try {
         if (!autoplayWanted) return;
+        if (mutedFirst) el.muted = true;
         const p = el.play();
         if (p && typeof p.then === 'function') {
           await p;
@@ -196,40 +228,51 @@ export default function VideoPlayer({ video, onEnded, onIntersectChange, nextVid
         setIsPlaying(true);
         setPlaying(true);
         setAutoplayBlocked(false);
+        return true;
       } catch {
-        // If blocked, expose small inline prompt; do not force mute automatically
         setIsPlaying(false);
         setPlaying(false);
         setAutoplayBlocked(true);
+        return false;
       }
     };
 
-    // Reset states and try
+    // initial try
     setIsPlaying(false);
     setPlaying(false);
     setAutoplayBlocked(false);
-    let to = null;
+    let safetyTimer = null;
+    let started = false;
+
+    const kickoff = async () => {
+      started = await tryPlay(false);
+      // Safety: if not started within 800ms, retry muted and show overlay
+      safetyTimer = setTimeout(async () => {
+        if (!started) {
+          const ok = await tryPlay(true);
+          if (!ok) setAutoplayBlocked(true);
+        }
+      }, 800);
+    };
+
     if (shouldAutoplay) {
-      to = setTimeout(tryPlay, 50);
+      kickoff();
     }
 
     return () => {
-      if (to) clearTimeout(to);
+      if (safetyTimer) clearTimeout(safetyTimer);
       el.removeEventListener('play', onPlay);
       el.removeEventListener('pause', onPause);
-      // Do not null shared ref here if still same component; leave as is
+      el.removeEventListener('timeupdate', onTime);
     };
-  }, [video?.url, video?.id, video?.sourceType, shouldAutoplay, autoplayWanted, mainVideoRef, setPlaying]);
+  }, [video?.url, video?.id, video?.sourceType, shouldAutoplay, autoplayWanted, mainVideoRef, setPlaying, setCurrentTime]);
 
   // Attempt autoplay for embeds by toggling src with autoplay param; also prepare a manual prompt
   useEffect(() => {
     if (video.sourceType === 'youtube' || video.sourceType === 'vimeo') {
-      // We rely on autoplay param in embed URL. If blocked, show manual prompt.
+      // We rely on autoplay param in embed URL. If blocked, show manual prompt later.
       if (shouldAutoplay) {
-        // We cannot detect reliably if iframe started playing, so we optimistically do not show blocked state immediately.
-        // Show prompt after a short delay if user still hasn't interacted.
         const t = setTimeout(() => {
-          // Show prompt if still autoplayWanted and not yet interacted
           setAutoplayBlocked(true);
         }, 1000);
         return () => clearTimeout(t);
@@ -241,17 +284,17 @@ export default function VideoPlayer({ video, onEnded, onIntersectChange, nextVid
   }, [video?.id, video?.sourceType, shouldAutoplay]);
 
   const handleUserPlayGesture = () => {
-    // User clicked Play button to bypass autoplay block
+    // User clicked Play to bypass autoplay block
     setAutoplayBlocked(false);
     setAutoplayWanted(false);
     try {
       if (video.sourceType === 'mp4' && videoRef.current) {
+        // unmute as it's a gesture; play directly
+        videoRef.current.muted = false;
         videoRef.current.play().catch(() => {});
       } else if (video.sourceType === 'youtube' || video.sourceType === 'vimeo') {
         // Reload iframe with autoplay=1 to ensure it starts after user gesture
         setAutoplayWanted(true);
-        // Toggling state will rebuild embed src with autoplay=1 which should now be allowed due to gesture
-        // Force a micro re-render by briefly toggling and resetting
         setTimeout(() => setAutoplayWanted(false), 0);
       }
     } catch {
@@ -259,20 +302,25 @@ export default function VideoPlayer({ video, onEnded, onIntersectChange, nextVid
     }
   };
 
-  // Track play/pause for native video to update isPlaying and context.playing
+  // Track play/pause for native video and keep currentTime
   useEffect(() => {
     if (video.sourceType !== 'mp4') return;
     const el = videoRef.current;
     if (!el) return;
     const onPlay = () => { setIsPlaying(true); setPlaying(true); };
     const onPause = () => { setIsPlaying(false); setPlaying(false); };
+    const onTime = () => {
+      try { setCurrentTime(el.currentTime || 0); } catch {}
+    };
     el.addEventListener('play', onPlay);
     el.addEventListener('pause', onPause);
+    el.addEventListener('timeupdate', onTime);
     return () => {
       el.removeEventListener('play', onPlay);
       el.removeEventListener('pause', onPause);
+      el.removeEventListener('timeupdate', onTime);
     };
-  }, [video?.id, video?.sourceType, setPlaying]);
+  }, [video?.id, video?.sourceType, setPlaying, setCurrentTime]);
 
   return (
     <div className="player-wrap" ref={containerRef}>
@@ -283,9 +331,9 @@ export default function VideoPlayer({ video, onEnded, onIntersectChange, nextVid
             controls
             src={video.url}
             preload="metadata"
+            poster={posterUrl}
             style={{ backgroundColor: 'black' }}
             onEnded={onMp4Ended}
-            // Keep poster/thumbnail visible until playback starts by relying on controls and preload behavior
           />
         ) : (
           <iframe
@@ -297,7 +345,7 @@ export default function VideoPlayer({ video, onEnded, onIntersectChange, nextVid
           />
         )}
 
-        {/* Inline prompt when browser blocks autoplay */}
+        {/* Inline prompt when browser blocks autoplay or on safety retry */}
         {shouldAutoplay && autoplayBlocked && (
           <div className="autoplay-overlay" role="dialog" aria-live="polite">
             <div className="autoplay-card">
