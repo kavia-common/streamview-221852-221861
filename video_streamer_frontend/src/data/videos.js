@@ -1,9 +1,18 @@
 const videos = [
+  // Top 4 as requested
+  { title: "The Gruffalo – Read Aloud Story", youtubeId: "s8sUPpPc8Ws", thumbnail: "https://i.ytimg.com/vi/s8sUPpPc8Ws/sddefault.jpg" },
+  { title: "Room on the Broom – Read Aloud Story", youtubeId: "cWB0goTWZic", thumbnail: "https://i.ytimg.com/vi/cWB0goTWZic/sddefault.jpg" },
+  { title: "Super Simple – The Itsy Bitsy Spider", youtubeId: "w_lCi8U49mY", thumbnail: "https://i.ytimg.com/vi/w_lCi8U49mY/sddefault.jpg" },
+  { title: "Super Simple – BINGO", youtubeId: "9mmF8zOlh_g", thumbnail: "https://i.ytimg.com/vi/9mmF8zOlh_g/sddefault.jpg" },
+
+  // Next 3 in order
   { title: "Baby Shark Dance", youtubeId: "XqZsoesa55w", thumbnail: "https://i.ytimg.com/vi/XqZsoesa55w/sddefault.jpg" },
+  { title: "Super Simple Songs - Twinkle Twinkle Little Star", youtubeId: "yCjJyiqpAuU", thumbnail: "https://i.ytimg.com/vi/yCjJyiqpAuU/sddefault.jpg" },
+  { title: "Masha and the Bear – Recipe for Disaster", youtubeId: "KYniUCGPGLs", thumbnail: "https://i.ytimg.com/vi/KYniUCGPGLs/sddefault.jpg" },
+
+  // Remaining list intact (original order excluding the moved ones)
   { title: "Cocomelon - Wheels on the Bus", youtubeId: "G6u5ZszC9jM", thumbnail: "https://i.ytimg.com/vi/G6u5ZszC9jM/sddefault.jpg" },
-  { title: "Super Simple Songs - Twinkle Twinkle Little Star", youtubeId: "yCjJyiqpAuU", thumbnail: "https://i.ytimg.com/vi/yCjJyiqpAuU/hqdefault.jpg" },
   { title: "Sesame Street: The Alphabet Song", youtubeId: "do-pN0FHTG4", thumbnail: "https://i.ytimg.com/vi/do-pN0FHTG4/hqdefault.jpg" },
-  { title: "Masha and the Bear – Recipe for Disaster", youtubeId: "KYniUCGPGLs", thumbnail: "https://i.ytimg.com/vi/KYniUCGPGLs/hqdefault.jpg" },
   { title: "Peppa Pig – The Playground", youtubeId: "tV6Fh9i3k9Q", thumbnail: "https://i.ytimg.com/vi/tV6Fh9i3k9Q/sddefault.jpg" },
   { title: "Peppa Pig – The Rainbow", youtubeId: "Vg7Vv2Rz1F8", thumbnail: "https://i.ytimg.com/vi/Vg7Vv2Rz1F8/hqdefault.jpg" },
   { title: "Bluey – Magic Xylophone (Short)", youtubeId: "SLR4v9c9kG8", thumbnail: "https://i.ytimg.com/vi/SLR4v9c9kG8/sddefault.jpg" },
@@ -24,11 +33,7 @@ const videos = [
   { title: "Dora the Explorer – Backpack Song (Nick Jr.)", youtubeId: "yQ9k2tO8Y7E", thumbnail: "https://i.ytimg.com/vi/yQ9k2tO8Y7E/hqdefault.jpg" },
   { title: "Fireman Sam – Best Rescues", youtubeId: "8lG0kQm1sVg", thumbnail: "https://i.ytimg.com/vi/8lG0kQm1sVg/hqdefault.jpg" },
   { title: "Paddington Bear – A Sticky Situation", youtubeId: "8bEo-8g1QnA", thumbnail: "https://i.ytimg.com/vi/8bEo-8g1QnA/hqdefault.jpg" },
-  { title: "Octonauts – The Great Algae Escape", youtubeId: "8c0d7K6m6MU", thumbnail: "https://i.ytimg.com/vi/8c0d7K6m6MU/sddefault.jpg" },
-  { title: "The Gruffalo – Read Aloud Story", youtubeId: "s8sUPpPc8Ws", thumbnail: "https://i.ytimg.com/vi/s8sUPpPc8Ws/hqdefault.jpg" },
-  { title: "Room on the Broom – Read Aloud Story", youtubeId: "cWB0goTWZic", thumbnail: "https://i.ytimg.com/vi/cWB0goTWZic/sddefault.jpg" },
-  { title: "Super Simple – The Itsy Bitsy Spider", youtubeId: "w_lCi8U49mY", thumbnail: "https://i.ytimg.com/vi/w_lCi8U49mY/hqdefault.jpg" },
-  { title: "Super Simple – BINGO", youtubeId: "9mmF8zOlh_g", thumbnail: "https://i.ytimg.com/vi/9mmF8zOlh_g/hqdefault.jpg" }
+  { title: "Octonauts – The Great Algae Escape", youtubeId: "8c0d7K6m6MU", thumbnail: "https://i.ytimg.com/vi/8c0d7K6m6MU/sddefault.jpg" }
 ];
 
 export default videos;
