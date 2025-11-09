@@ -10,7 +10,7 @@ export default function VideoCard({ video, compact = false }) {
   const navigate = useNavigate();
   const onClick = () => navigate(`/watch/${video.id}`);
 
-  // Async thumbnail resolver with fallback and blur-up
+  // Async thumbnail resolver with fallback (no blur-up)
   const { url, loaded, isResolving, onError, onLoad } = useThumbnail(video, {
     fallback: '/assets/thumbnail-fallback.jpg',
   });
@@ -21,10 +21,8 @@ export default function VideoCard({ video, compact = false }) {
       alt={`${video.title} thumbnail`}
       onError={onError}
       onLoad={onLoad}
+      // No blur or transitional scaling — render crisp immediately
       style={{
-        filter: loaded ? 'none' : 'blur(12px)',
-        transform: loaded ? 'none' : 'scale(1.05)',
-        transition: 'filter 200ms ease, transform 200ms ease',
         background:
           'linear-gradient(135deg, rgba(0,0,0,0.06), rgba(0,0,0,0.02))',
       }}

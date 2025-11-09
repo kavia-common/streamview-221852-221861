@@ -126,6 +126,10 @@ a { color: inherit; text-decoration: none; }
   width: 100%;
   height: 100%;
   object-fit: cover;
+  /* Ensure no blur applied to thumbnails */
+  filter: none !important;
+  transform: none !important;
+  transition: none !important;
 }
 .thumb .skeleton {
   position: absolute;
