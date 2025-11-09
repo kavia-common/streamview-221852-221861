@@ -7,7 +7,8 @@ import VideoCard from './VideoCard';
  * Only YouTube items are shown (safety filter).
  */
 export default function VideoGrid({ items }) {
-  const list = Array.isArray(items) ? items.filter((v) => v && v.sourceType === 'youtube') : [];
+  // Show both YouTube and MP4 sources in the grid
+  const list = Array.isArray(items) ? items.filter((v) => v && (v.sourceType === 'youtube' || v.sourceType === 'mp4')) : [];
   return (
     <div className="grid" role="list">
       {list.map((v) => (

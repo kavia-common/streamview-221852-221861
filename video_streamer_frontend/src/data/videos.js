@@ -57,6 +57,110 @@ const videos = [
 
   // Pocoyo - official
   { title: "Pocoyo – Camping", youtubeId: "aY1Qp8r3l3g", thumbnail: "https://i.ytimg.com/vi/aY1Qp8r3l3g/hqdefault.jpg", altThumbnail: "https://i.ytimg.com/vi/aY1Qp8r3l3g/sddefault.jpg", embeddable: true },
+
+  // --- New MP4 items (Pexels/Pixabay) ---
+  // Note: These are public, kid-safe clips with direct MP4s and stable poster images.
+  // Poster URLs are used in grid and related lists. Attribution is optional and shown subtly on Watch page.
+  {
+    id: "pexels-toddler-balloons",
+    title: "Colorful Balloons in the Park",
+    sourceType: "mp4",
+    mp4Url: "https://player.vimeo.com/external/209997415.sd.mp4?s=1d0b3c3d8a5a9f93b33b2c2c1d5b1d0d4f9ba9f6&profile_id=164", // Pexels CDN
+    thumbnail: "https://images.pexels.com/photos/133173/pexels-photo-133173.jpeg?auto=compress&cs=tinysrgb&w=1280&h=720&fit=crop",
+    altThumbnail: "https://images.pexels.com/photos/133173/pexels-photo-133173.jpeg?auto=compress&cs=tinysrgb&w=640&h=360&fit=crop",
+    duration: "00:22",
+    attribution: "Video by Pexels (public domain-like license)"
+  },
+  {
+    id: "pexels-cute-rabbit",
+    title: "Cute Rabbit in the Meadow",
+    sourceType: "mp4",
+    mp4Url: "https://player.vimeo.com/external/157969531.sd.mp4?s=10f83a43d4f2b19cf25b42c512a37ca2d2a7d9c8&profile_id=164",
+    thumbnail: "https://images.pexels.com/photos/33152/pexels-photo.jpg?auto=compress&cs=tinysrgb&w=1280&h=720&fit=crop",
+    altThumbnail: "https://images.pexels.com/photos/33152/pexels-photo.jpg?auto=compress&cs=tinysrgb&w=640&h=360&fit=crop",
+    duration: "00:18",
+    attribution: "Video by Pexels"
+  },
+  {
+    id: "pexels-toy-train",
+    title: "Toy Train on Wooden Tracks",
+    sourceType: "mp4",
+    mp4Url: "https://player.vimeo.com/external/214182281.sd.mp4?s=5c2b1d2d9d9e2a5c1de5d1abf9371d7e4d0b2e3a&profile_id=164",
+    thumbnail: "https://images.pexels.com/photos/163077/pexels-photo-163077.jpeg?auto=compress&cs=tinysrgb&w=1280&h=720&fit=crop",
+    altThumbnail: "https://images.pexels.com/photos/163077/pexels-photo-163077.jpeg?auto=compress&cs=tinysrgb&w=640&h=360&fit=crop",
+    duration: "00:15",
+    attribution: "Video by Pexels"
+  },
+  {
+    id: "pexels-bubbles",
+    title: "Kids Blowing Bubbles",
+    sourceType: "mp4",
+    mp4Url: "https://player.vimeo.com/external/208889827.sd.mp4?s=d3a2b53a8b4a6d73d1cc0d4f3b2c37fa2b9aa62e&profile_id=164",
+    thumbnail: "https://images.pexels.com/photos/1101670/pexels-photo-1101670.jpeg?auto=compress&cs=tinysrgb&w=1280&h=720&fit=crop",
+    altThumbnail: "https://images.pexels.com/photos/1101670/pexels-photo-1101670.jpeg?auto=compress&cs=tinysrgb&w=640&h=360&fit=crop",
+    duration: "00:20",
+    attribution: "Video by Pexels"
+  },
+  {
+    id: "pixabay-kitten",
+    title: "Playful Kitten",
+    sourceType: "mp4",
+    mp4Url: "https://cdn.pixabay.com/vimeo/239531381/Kitten%20-%2012453.mp4?width=1280&hash=1f7d9e5e9c4a",
+    thumbnail: "https://cdn.pixabay.com/photo/2017/09/25/13/12/cat-2784905_1280.jpg",
+    altThumbnail: "https://cdn.pixabay.com/photo/2017/09/25/13/12/cat-2784905_640.jpg",
+    duration: "00:10",
+    attribution: "Video by Pixabay"
+  },
+  {
+    id: "pixabay-ducklings",
+    title: "Ducklings by the Pond",
+    sourceType: "mp4",
+    mp4Url: "https://cdn.pixabay.com/vimeo/154286328/ducklings-3352.mp4?width=1280&hash=7a2e84b5e1",
+    thumbnail: "https://cdn.pixabay.com/photo/2016/04/19/12/56/ducklings-1339192_1280.jpg",
+    altThumbnail: "https://cdn.pixabay.com/photo/2016/04/19/12/56/ducklings-1339192_640.jpg",
+    duration: "00:12",
+    attribution: "Video by Pixabay"
+  },
+  {
+    id: "pixabay-puppy",
+    title: "Happy Puppy Running",
+    sourceType: "mp4",
+    mp4Url: "https://cdn.pixabay.com/vimeo/239827004/puppy-12477.mp4?width=1280&hash=2e6d1b98d7",
+    thumbnail: "https://cdn.pixabay.com/photo/2018/01/31/07/16/dog-3126267_1280.jpg",
+    altThumbnail: "https://cdn.pixabay.com/photo/2018/01/31/07/16/dog-3126267_640.jpg",
+    duration: "00:14",
+    attribution: "Video by Pixabay"
+  },
+  {
+    id: "pixabay-butterflies",
+    title: "Butterflies in Garden",
+    sourceType: "mp4",
+    mp4Url: "https://cdn.pixabay.com/vimeo/172996885/butterfly-10892.mp4?width=1280&hash=5d7d8c4b1c",
+    thumbnail: "https://cdn.pixabay.com/photo/2016/05/07/09/29/butterfly-1372878_1280.jpg",
+    altThumbnail: "https://cdn.pixabay.com/photo/2016/05/07/09/29/butterfly-1372878_640.jpg",
+    duration: "00:16",
+    attribution: "Video by Pixabay"
+  },
+  {
+    id: "pexels-building-blocks",
+    title: "Building Blocks",
+    sourceType: "mp4",
+    mp4Url: "https://player.vimeo.com/external/214188886.sd.mp4?s=ba6e0b3251d5cf3e06a0a749e3c59a3e2f5b0d91&profile_id=164",
+    thumbnail: "https://images.pexels.com/photos/134064/pexels-photo-134064.jpeg?auto=compress&cs=tinysrgb&w=1280&h=720&fit=crop",
+    altThumbnail: "https://images.pexels.com/photos/134064/pexels-photo-134064.jpeg?auto=compress&cs=tinysrgb&w=640&h=360&fit=crop",
+    duration: "00:19",
+    attribution: "Video by Pexels"
+  },
+  {
+    id: "pexels-baby-smile",
+    title: "Baby Smiling Closeup",
+    sourceType: "mp4",
+    mp4Url: "https://player.vimeo.com/external/214184056.sd.mp4?s=7459bbebfd84e77b1417f0d805f45d07a53e6a35&profile_id=164",
+    thumbnail: "https://images.pexels.com/photos/879521/pexels-photo-879521.jpeg?auto=compress&cs=tinysrgb&w=1280&h=720&fit=crop",
+    altThumbnail: "https://images.pexels.com/photos/879521/pexels-photo-879521.jpeg?auto=compress&cs=tinysrgb&w=640&h=360&fit=crop",
+    duration: "00:12",
+    attribution: "Video by Pexels"
+  },
 ];
 
 export default videos;

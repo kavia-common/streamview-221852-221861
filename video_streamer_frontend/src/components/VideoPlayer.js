@@ -3,9 +3,10 @@ import { PlayerContext } from '../context/PlayerContext';
 
 /**
  * PUBLIC_INTERFACE
- * VideoPlayer (YouTube-first) displays a video. Only YouTube is supported in catalog.
- * - Iframe embeds with allowFullScreen and autoplay handling
- * - Fullscreen button tries requestFullscreen on container and relies on iframe allowfullscreen
+ * VideoPlayer displays a video from YouTube or a direct MP4 source.
+ * - YouTube: iframe embed with allowFullScreen and autoplay handling
+ * - MP4: native HTML5 video with controls (play/pause, fullscreen, PiP) and muted autoplay on mobile
+ * - Fullscreen button tries requestFullscreen on container and relies on iframe/video allowfullscreen
  * - Autoplay-next overlay and graceful blocked prompt
  * Props:
  * - video: required video object
@@ -17,11 +18,14 @@ import { PlayerContext } from '../context/PlayerContext';
 export default function VideoPlayer({ video, onEnded, onIntersectChange, nextVideo, shouldAutoplay = false }) {
   const containerRef = useRef(null);
   const iframeRef = useRef(null);
+  const html5Ref = useRef(null);
   const {
     autoplay,
     toggleAutoplay,
     setShowMini,
     setProviderType,
+    setActiveHandle,
+    mainVideoRef,
   } = useContext(PlayerContext);
 
   // countdown for autoplay next
@@ -56,8 +60,12 @@ export default function VideoPlayer({ video, onEnded, onIntersectChange, nextVid
     return () => obs.disconnect();
   }, [onIntersectChange, setShowMini]);
 
+  const isYouTube = video?.sourceType === 'youtube';
+  const isMp4 = video?.sourceType === 'mp4';
+
   // build YouTube embed params and url
   const embed = useMemo(() => {
+    if (!isYouTube) return null;
     const id = video?.youtubeId;
     const params = new URLSearchParams({
       rel: '0',
@@ -72,24 +80,36 @@ export default function VideoPlayer({ video, onEnded, onIntersectChange, nextVid
         'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen',
       providerId: id,
     };
-  }, [video?.youtubeId, autoplayWanted]);
+  }, [isYouTube, video?.youtubeId, autoplayWanted]);
 
-  // Mark provider type in context
+  // Mark provider type in context and set active handle
   useEffect(() => {
-    setProviderType('youtube');
-  }, [setProviderType, video?.id]);
+    if (isYouTube) {
+      setProviderType('youtube');
+      setActiveHandle(iframeRef.current);
+    } else if (isMp4) {
+      setProviderType('mp4');
+      setActiveHandle(html5Ref.current);
+      if (mainVideoRef) mainVideoRef.current = html5Ref.current;
+    } else {
+      setProviderType(null);
+      setActiveHandle(null);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isYouTube, isMp4, video?.id]);
 
-  // handle autoplay block for iframe
+  // handle autoplay block for iframe/mp4
   useEffect(() => {
     if (!shouldAutoplay) {
       setAutoplayBlocked(false);
       return;
     }
+    // For iframe, we show a prompt; for mp4, attempt muted autoplay immediately
     const t = setTimeout(() => setAutoplayBlocked(true), 1000);
     return () => clearTimeout(t);
   }, [video?.id, shouldAutoplay]);
 
-  // Fullscreen handler - use requestFullscreen on container; iframe has allowfullscreen
+  // Fullscreen handler - use requestFullscreen on container
   const handleFullscreen = async () => {
     try {
       const node = containerRef.current;
@@ -135,25 +155,82 @@ export default function VideoPlayer({ video, onEnded, onIntersectChange, nextVid
   const handleUserPlayGesture = () => {
     setAutoplayBlocked(false);
     setAutoplayWanted(true);
-    // toggle to refresh iframe src
-    setTimeout(() => setAutoplayWanted(false), 0);
+    // YouTube: toggle to refresh iframe src
+    if (isYouTube) {
+      setTimeout(() => setAutoplayWanted(false), 0);
+    } else if (isMp4 && html5Ref.current) {
+      try { html5Ref.current.muted = false; } catch {}
+      html5Ref.current.play().catch(() => {});
+    }
   };
 
-  // Since we cannot reliably detect end events from generic iframe without API bindings,
-  // we rely on explicit user action; however, we still show an "Up next" overlay
-  // if the user toggles a control or when integrating with YT Player API in future.
+  // MP4 video event handlers
+  useEffect(() => {
+    if (!isMp4 || !html5Ref.current) return;
+    const el = html5Ref.current;
+    const onCanPlay = () => {
+      if (shouldAutoplay) {
+        el.muted = true; // mobile-safe autoplay
+        el.play().catch(() => {
+          // Autoplay blocked - show overlay
+          setAutoplayBlocked(true);
+        });
+      }
+    };
+    const onEnded = () => {
+      if (autoplay && nextVideo) {
+        setCountdown(COUNTDOWN_SECS);
+        setCountdownActive(true);
+      }
+    };
+    el.addEventListener('canplay', onCanPlay);
+    el.addEventListener('ended', onEnded);
+    return () => {
+      el.removeEventListener('canplay', onCanPlay);
+      el.removeEventListener('ended', onEnded);
+    };
+  }, [isMp4, shouldAutoplay, autoplay, nextVideo]);
+
+  // PiP for MP4
+  const handlePiP = async () => {
+    const el = html5Ref.current;
+    if (!el) return;
+    try {
+      if (document.pictureInPictureElement) {
+        await document.exitPictureInPicture();
+      } else if (el.requestPictureInPicture) {
+        await el.requestPictureInPicture();
+      } else {
+        alert('Picture-in-Picture is not supported.');
+      }
+    } catch {
+      // ignore
+    }
+  };
 
   return (
     <div className="player-wrap" ref={containerRef}>
       <div className="player-area" aria-label="Video player area">
-        <iframe
-          ref={iframeRef}
-          title={video.title}
-          src={embed?.src}
-          allow={embed?.allow}
-          allowFullScreen
-          frameBorder="0"
-        />
+        {isYouTube && (
+          <iframe
+            ref={iframeRef}
+            title={video.title}
+            src={embed?.src}
+            allow={embed?.allow}
+            allowFullScreen
+            frameBorder="0"
+          />
+        )}
+        {!isYouTube && isMp4 && (
+          <video
+            ref={html5Ref}
+            src={video.mp4Url}
+            poster={video.thumbnail || video.altThumbnail}
+            playsInline
+            controls
+            style={{ width: '100%', height: '100%', display: 'block', background: '#000' }}
+          />
+        )}
 
         {shouldAutoplay && autoplayBlocked && (
           <div className="autoplay-overlay" role="dialog" aria-live="polite">
@@ -189,6 +266,11 @@ export default function VideoPlayer({ video, onEnded, onIntersectChange, nextVid
         <button className="btn-primary" onClick={handleFullscreen} aria-label="Enter fullscreen">
           ⛶ Fullscreen
         </button>
+        {isMp4 && (
+          <button className="btn-secondary" onClick={handlePiP} aria-label="Toggle Picture-in-Picture">
+            PiP
+          </button>
+        )}
         <div style={{ flex: 1 }} />
         <label style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13 }}>
           <input

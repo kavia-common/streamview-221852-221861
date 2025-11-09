@@ -32,7 +32,7 @@ export default function WatchPage() {
     return rest.slice(0, 10);
   }, [id, list]);
 
-  if (!video || video.sourceType !== 'youtube') {
+  if (!video) {
     return (
       <div className="container">
         <p>Video not found or unavailable to embed.</p>
@@ -93,10 +93,17 @@ export default function WatchPage() {
           <VideoPlayer {...playerProps} />
           <div className="section">
             <h2 style={{ margin: '4px 0 8px 0' }}>{video.title}</h2>
-            <div className="sub" style={{ marginBottom: 8 }}>
-              {video.channel} • {video.views} • {video.uploadedAt}
-            </div>
-            <p style={{ margin: 0 }}>{video.description}</p>
+            {video.channel && (
+              <div className="sub" style={{ marginBottom: 8 }}>
+                {video.channel} • {video.views} • {video.uploadedAt}
+              </div>
+            )}
+            {video.attribution && (
+              <div className="sub" style={{ marginBottom: 8, fontSize: 12, opacity: 0.85 }}>
+                {video.attribution}
+              </div>
+            )}
+            {video.description && <p style={{ margin: 0 }}>{video.description}</p>}
           </div>
         </div>
         <aside>
@@ -113,7 +120,6 @@ export default function WatchPage() {
 
       <MiniPlayer
         video={video}
-        isMp4={false}
         onClick={() => {
           const el = document.querySelector('.player-wrap');
           if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
