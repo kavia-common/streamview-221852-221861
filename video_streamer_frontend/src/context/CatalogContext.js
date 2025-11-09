@@ -5,24 +5,28 @@ import backupRaw from '../data/backupVideos';
 /**
  * PUBLIC_INTERFACE
  * CatalogContext provides a guaranteed-availability catalog of 30 YouTube kids videos.
- * - At app start, performs a YouTube oEmbed preflight to determine embed_ok for each candidate
- * - Builds a final 30-item list only including items with embed_ok === true
- * - If any primary item fails, automatically pulls from a pre-vetted backup pool until all 30 slots are filled
- * - Strict thumbnails: each item provides `thumbnail` and `altThumbnail` (sddefault/hqdefault)
- * - If both thumbnails fail at runtime, a consumer can call replaceWithBackup to swap the item out
- * - Persists the final resolved set in localStorage for stability across reloads
- * - Preserves user's top-7 ordering via sv:catalog:top7 if present; otherwise uses the primary dataset's top 7
+ *
+ * Resilience & Stability details:
+ * - Atomic resolution: builds the full 30-item array in memory before publishing to state.
+ * - oEmbed preflight with tri-state: true | false | 'u' (unknown). Timeouts and network/CORS issues are treated as 'unknown' (not false).
+ *   Unknown is allowed in the final list (we only exclude when explicitly unembeddable === false).
+ *   Unknowns are retried in the background to settle caches without disrupting the UI.
+ * - Backup fulfillment: if a primary item is unembeddable, pull from the vetted backup pool until all 30 slots are filled.
+ * - Runtime replacement: consumers can call replaceWithBackup(youtubeId) if strict thumbnail checks fail; the item is swapped immediately
+ *   without reducing the total count. Replacements update persistence and top-7 ordering if applicable.
+ * - Persistence: writes once when a stable 30-item list is finalized. Uses versioned keys to safely bust stale caches.
+ * - Top-7 ordering: preserves user’s last known top-7 ordering (if present) otherwise uses the dataset’s first 7.
  *
  * Exposed API:
  * - videos: Array<CatalogItem>
- * - ready: boolean indicating the catalog is available
+ * - ready: boolean indicating the catalog is finalized and stable
  * - replaceWithBackup(youtubeId: string): replace a single bad item from the backup pool and persist
  * - refreshCatalog(): rebuild the catalog from scratch (oEmbed preflight)
  *
- * Storage keys:
- * - sv:oembed:<id> = { ok: boolean, exp: number }
- * - sv:catalog:final = { items: CatalogItem[], exp: number }
- * - sv:catalog:top7 = string[] of youtubeIds (ordering for lead items)
+ * Storage keys (v2):
+ * - sv:catalog:final:v2 = { items: CatalogItem[], exp: number }
+ * - sv:catalog:top7:v2 = string[] of youtubeIds (ordering for lead items)
+ * - sv:oembed:<id>:v2 = { ok: true | false | 'u', exp: number }
  * - sv:thumbfail:<id> = "1" if item had two failing thumbnails at runtime (advisory)
  */
 
@@ -34,10 +38,32 @@ export const CatalogContext = createContext({
   refreshCatalog: () => {},
 });
 
+// Versioned keys
+const STORAGE_VERSION = 'v2';
+const KEYS = {
+  catalogFinalV2: `sv:catalog:final:${STORAGE_VERSION}`,
+  catalogTop7V2: `sv:catalog:top7:${STORAGE_VERSION}`,
+  catalogFinalV1: 'sv:catalog:final', // legacy (read-only fallback)
+  catalogTop7V1: 'sv:catalog:top7',   // legacy (read-only fallback)
+  oembedV2: (id) => `sv:oembed:${id}:${STORAGE_VERSION}`,
+  oembedV1: (id) => `sv:oembed:${id}`, // legacy (read-only fallback)
+  thumbFail: (id) => `sv:thumbfail:${id}`,
+};
+
+// Dev logging gate
+const DEBUG =
+  process.env.NODE_ENV !== 'production' &&
+  String(process.env.REACT_APP_LOG_LEVEL || '').toLowerCase() !== 'silent';
+
+function dlog(...args) {
+  if (DEBUG) {
+    // eslint-disable-next-line no-console
+    console.log('[Catalog]', ...args);
+  }
+}
+
 // Helpers: normalize raw dataset items into catalog format
 function normalizeItem(v, idx) {
-  // Ensure strict thumbnail fields exist
-  // If only one URL was provided, derive an alternate using sd/hq variants
   const yt = v.youtubeId;
   const url = `https://www.youtube.com/watch?v=${yt}`;
   const primary = v.thumbnail || `https://i.ytimg.com/vi/${yt}/sddefault.jpg`;
@@ -61,8 +87,8 @@ function normalizeItem(v, idx) {
     thumbnail: primary,
     altThumbnail: alt,
     embeddable: v.embeddable === true,
-    embed_ok: false, // will be set after preflight
-    _rank: idx, // keep an initial rank for deterministic fill
+    embed_ok: false, // will be set after preflight/acceptance
+    _rank: idx, // deterministic fill ordering
   };
 }
 
@@ -83,74 +109,127 @@ function writeJSON(key, value) {
   }
 }
 
+// oEmbed cache: tri-state boolean | 'u' (unknown)
 function readEmbedCache(id) {
   try {
-    const raw = localStorage.getItem(`sv:oembed:${id}`);
-    if (!raw) return null;
-    const obj = JSON.parse(raw);
-    if (!obj || typeof obj.ok !== 'boolean' || !obj.exp) return null;
-    if (Date.now() > obj.exp) {
-      localStorage.removeItem(`sv:oembed:${id}`);
+    // v2 first
+    const rawV2 = localStorage.getItem(KEYS.oembedV2(id));
+    if (rawV2) {
+      const obj = JSON.parse(rawV2);
+      if (!obj || obj.exp == null) return null;
+      if (Date.now() > obj.exp) {
+        localStorage.removeItem(KEYS.oembedV2(id));
+        return null;
+      }
+      if (obj.ok === true) return true;
+      if (obj.ok === false) return false;
+      if (obj.ok === 'u') return 'u';
       return null;
     }
-    return obj.ok;
+    // legacy v1 fallback (boolean only)
+    const rawV1 = localStorage.getItem(KEYS.oembedV1(id));
+    if (rawV1) {
+      const obj1 = JSON.parse(rawV1);
+      if (!obj1 || obj1.exp == null) return null;
+      if (Date.now() > obj1.exp) {
+        localStorage.removeItem(KEYS.oembedV1(id));
+        return null;
+      }
+      // v1 false might have been a timeout mis-flag; treat as 'unknown'
+      if (obj1.ok === true) return true;
+      if (obj1.ok === false) return 'u';
+      return null;
+    }
+    return null;
   } catch {
     return null;
   }
 }
 function writeEmbedCache(id, ok) {
   try {
-    const ttl = 7 * 24 * 60 * 60 * 1000; // 7 days
+    // TTL: true/false -> 7 days; unknown 'u' -> 6 hours (retry sooner)
+    const ttl =
+      ok === 'u' ? 6 * 60 * 60 * 1000 : 7 * 24 * 60 * 60 * 1000;
     const exp = Date.now() + ttl;
-    localStorage.setItem(`sv:oembed:${id}`, JSON.stringify({ ok, exp }));
+    localStorage.setItem(KEYS.oembedV2(id), JSON.stringify({ ok, exp, v: STORAGE_VERSION }));
   } catch {
     // ignore
   }
 }
 
-async function preflightOEmbed(id, signal) {
+/**
+ * PUBLIC_INTERFACE
+ * Perform a YouTube oEmbed preflight with a timeout.
+ * Returns one of: true | false | 'u' (unknown).
+ * - Timeout or network/CORS errors => 'u'
+ * - HTTP 4xx/5xx => false (explicit invalid)
+ * - 2xx => true
+ */
+async function preflightOEmbed(id, externalSignal) {
   const cached = readEmbedCache(id);
   if (cached !== null) return cached;
 
+  const controller = new AbortController();
+  const to = setTimeout(() => controller.abort(), 1200);
   try {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 750);
-    await fetch(
+    const resp = await fetch(
       `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${id}&format=json`,
       {
-        mode: 'no-cors',
-        cache: 'force-cache',
-        signal: signal || controller.signal,
+        method: 'GET',
+        headers: { Accept: 'application/json' },
+        signal: externalSignal || controller.signal,
+        cache: 'default',
       }
     );
-    clearTimeout(timer);
-    writeEmbedCache(id, true);
-    return true;
-  } catch {
+    clearTimeout(to);
+    if (resp.ok) {
+      writeEmbedCache(id, true);
+      return true;
+    }
+    // If we can see a real HTTP status and it's not ok, consider it explicitly unembeddable
     writeEmbedCache(id, false);
     return false;
+  } catch (err) {
+    clearTimeout(to);
+    // Treat abort/timeouts and network errors as unknown
+    writeEmbedCache(id, 'u');
+    return 'u';
   }
 }
 
 function readSavedCatalog() {
-  const obj = readJSON('sv:catalog:final');
-  if (!obj || !obj.items || !Array.isArray(obj.items) || !obj.exp) return null;
-  if (Date.now() > obj.exp) {
-    try {
-      localStorage.removeItem('sv:catalog:final');
-    } catch {}
-    return null;
+  const objV2 = readJSON(KEYS.catalogFinalV2);
+  if (objV2 && Array.isArray(objV2.items) && objV2.exp && Date.now() <= objV2.exp) {
+    return objV2;
   }
-  return obj;
+  // fallback to v1 only when valid and complete
+  const objV1 = readJSON(KEYS.catalogFinalV1);
+  if (objV1 && Array.isArray(objV1.items) && objV1.exp && Date.now() <= objV1.exp) {
+    return objV1;
+  }
+  return null;
+}
+
+function readSavedTop7() {
+  const v2 = readJSON(KEYS.catalogTop7V2);
+  if (Array.isArray(v2) && v2.length > 0) return v2;
+  const v1 = readJSON(KEYS.catalogTop7V1);
+  if (Array.isArray(v1) && v1.length > 0) return v1;
+  return null;
 }
 
 function persistCatalog(items) {
+  if (!Array.isArray(items) || items.length !== 30) {
+    // Never persist partial/unstable lists
+    dlog('persistCatalog skipped (not 30 items)');
+    return;
+  }
   try {
     const ttl = 7 * 24 * 60 * 60 * 1000;
     const exp = Date.now() + ttl;
-    writeJSON('sv:catalog:final', { items, exp });
-    // save top-7 ordering for next boot
-    writeJSON('sv:catalog:top7', items.slice(0, 7).map((i) => i.youtubeId));
+    writeJSON(KEYS.catalogFinalV2, { items, exp, v: STORAGE_VERSION });
+    // save top-7 ordering for next boot (versioned)
+    writeJSON(KEYS.catalogTop7V2, items.slice(0, 7).map((i) => i.youtubeId));
   } catch {
     // ignore
   }
@@ -170,22 +249,28 @@ export function CatalogProvider({ children }) {
   const [ready, setReady] = useState(false);
   const buildingRef = useRef(false);
 
-  // Build the catalog (with embed_ok filter, backup fulfillment, and top-7 preservation)
+  // Track latest videos for async replacement logic
+  const videosRef = useRef([]);
+  useEffect(() => {
+    videosRef.current = videos;
+  }, [videos]);
+
+  // Build the catalog (with embed tri-state, backup fulfillment, and top-7 preservation)
   const buildFinal = useCallback(async () => {
     if (buildingRef.current) return;
     buildingRef.current = true;
 
-    const savedTop7 = readJSON('sv:catalog:top7');
-    const desiredTop7 = Array.isArray(savedTop7) && savedTop7.length > 0
-      ? savedTop7
-      : primary.slice(0, 7).map((i) => i.youtubeId);
+    const savedTop7 = readSavedTop7();
+    const desiredTop7 =
+      Array.isArray(savedTop7) && savedTop7.length > 0
+        ? savedTop7
+        : primary.slice(0, 7).map((i) => i.youtubeId);
 
-    // Build embed_ok map for all candidates we might consider
     const allCandidates = [...primary, ...backup];
     const usedIds = new Set();
     const embedOk = {};
 
-    // First pass: use whatever is already cached
+    // First pass: cached values
     for (const item of allCandidates) {
       const c = readEmbedCache(item.youtubeId);
       if (c !== null) embedOk[item.youtubeId] = c;
@@ -197,13 +282,13 @@ export function CatalogProvider({ children }) {
       embedOk[item.youtubeId] = await preflightOEmbed(item.youtubeId);
     }
 
-    // Helper to push item if allowed and not used
-    const pushIfOk = (arr, item) => {
+    // Helper: allow unless explicitly false; ensure no duplicates
+    const pushIfAllowed = (arr, item) => {
       if (!item) return false;
       if (usedIds.has(item.youtubeId)) return false;
-      if (embedOk[item.youtubeId] !== true) return false;
+      if (embedOk[item.youtubeId] === false) return false; // only exclude explicit false
       usedIds.add(item.youtubeId);
-      arr.push({ ...item, embed_ok: true });
+      arr.push({ ...item, embed_ok: embedOk[item.youtubeId] !== false });
       return true;
     };
 
@@ -215,19 +300,19 @@ export function CatalogProvider({ children }) {
         primary.find((i) => i.youtubeId === tid) ||
         backup.find((i) => i.youtubeId === tid) ||
         null;
-      if (pushIfOk(final, item)) continue;
+      if (pushIfAllowed(final, item)) continue;
 
-      // Fallback: scan primary then backup for next available
+      // Fallback: scan primary then backup for next allowed
       let filled = false;
       for (const p of primary) {
-        if (pushIfOk(final, p)) {
+        if (pushIfAllowed(final, p)) {
           filled = true;
           break;
         }
       }
       if (!filled) {
         for (const b of backup) {
-          if (pushIfOk(final, b)) {
+          if (pushIfAllowed(final, b)) {
             filled = true;
             break;
           }
@@ -238,23 +323,46 @@ export function CatalogProvider({ children }) {
     // Fill the rest up to 30
     for (const p of primary) {
       if (final.length >= 30) break;
-      pushIfOk(final, p);
+      pushIfAllowed(final, p);
     }
     for (const b of backup) {
       if (final.length >= 30) break;
-      pushIfOk(final, b);
+      pushIfAllowed(final, b);
     }
 
-    // Ensure exactly 30 by trimming (shouldn't need but guard)
-    const resolved = final.slice(0, 30);
+    const counts = {
+      true: Object.values(embedOk).filter((v) => v === true).length,
+      false: Object.values(embedOk).filter((v) => v === false).length,
+      unknown: Object.values(embedOk).filter((v) => v === 'u').length,
+    };
+    dlog('oEmbed preflight counts =>', counts, 'final length', final.length);
 
-    setVideos(resolved);
-    persistCatalog(resolved);
-    setReady(true);
+    if (final.length === 30) {
+      // Publish atomically after reaching 30
+      setVideos(final.slice(0, 30));
+      persistCatalog(final.slice(0, 30));
+      setReady(true);
+    } else {
+      // Never publish partial lists
+      dlog('Atomic build produced < 30 items; deferring publish');
+    }
+
     buildingRef.current = false;
+
+    // Background retry: settle unknowns to improve future cold-starts
+    setTimeout(() => {
+      (async () => {
+        for (const item of allCandidates) {
+          if (embedOk[item.youtubeId] === 'u') {
+            // eslint-disable-next-line no-await-in-loop
+            await preflightOEmbed(item.youtubeId);
+          }
+        }
+      })();
+    }, 0);
   }, [primary, backup]);
 
-  // Verify and repair a saved catalog in the background
+  // Verify and repair a saved catalog in the background without reducing count
   const verifyAndRepair = useCallback(async () => {
     const current = readSavedCatalog();
     if (!current || !Array.isArray(current.items)) {
@@ -264,7 +372,7 @@ export function CatalogProvider({ children }) {
     const items = current.items;
     const usedIds = new Set(items.map((i) => i.youtubeId));
 
-    // Check embed_ok for each item; if any false -> replace
+    // Check oEmbed for each item
     const embedOk = {};
     for (const i of items) {
       // eslint-disable-next-line no-await-in-loop
@@ -272,25 +380,32 @@ export function CatalogProvider({ children }) {
     }
 
     let changed = false;
-    const repaired = items.map((i) => ({ ...i, embed_ok: embedOk[i.youtubeId] === true }));
+    const repaired = items.map((i) => ({
+      ...i,
+      embed_ok: embedOk[i.youtubeId] !== false,
+    }));
 
-    // Replace any failed items
+    // Identify positions needing replacement (explicit false only)
     const need = [];
     repaired.forEach((i, idx) => {
-      if (i.embed_ok !== true) {
+      if (embedOk[i.youtubeId] === false) {
         need.push(idx);
         usedIds.delete(i.youtubeId);
       }
     });
 
-    // Pull replacements from backup then primary, respecting embed_ok and not reusing ids
+    // Replacement finder: prefer backup, then primary; allow unless explicitly false
     async function findReplacement() {
       for (const pool of [backup, primary]) {
         for (const cand of pool) {
           if (usedIds.has(cand.youtubeId)) continue;
-          // eslint-disable-next-line no-await-in-loop
-          const ok = await preflightOEmbed(cand.youtubeId);
-          if (ok) {
+          const cached = readEmbedCache(cand.youtubeId);
+          let ok = cached;
+          if (ok === null) {
+            // eslint-disable-next-line no-await-in-loop
+            ok = await preflightOEmbed(cand.youtubeId);
+          }
+          if (ok !== false) {
             usedIds.add(cand.youtubeId);
             return { ...cand, embed_ok: true };
           }
@@ -308,7 +423,7 @@ export function CatalogProvider({ children }) {
       }
     }
 
-    // Ensure 30 items by topping up if trimmed earlier
+    // Ensure we still present exactly 30; if not, try to top-up
     while (repaired.length < 30) {
       // eslint-disable-next-line no-await-in-loop
       const rep = await (async () => {
@@ -317,7 +432,7 @@ export function CatalogProvider({ children }) {
             if (usedIds.has(cand.youtubeId)) continue;
             // eslint-disable-next-line no-await-in-loop
             const ok = await preflightOEmbed(cand.youtubeId);
-            if (ok) {
+            if (ok !== false) {
               usedIds.add(cand.youtubeId);
               return { ...cand, embed_ok: true };
             }
@@ -332,12 +447,15 @@ export function CatalogProvider({ children }) {
 
     const final = repaired.slice(0, 30);
 
-    setVideos(final);
-    persistCatalog(final);
-    setReady(true);
-
-    if (!changed && final.length === 30) {
-      // Up-to-date, nothing else to do
+    if (final.length === 30) {
+      setVideos(final);
+      persistCatalog(final);
+      setReady(true);
+      dlog('verifyAndRepair applied:', { changed, length: final.length });
+    } else {
+      dlog('verifyAndRepair could not maintain 30 items; deferring publish and triggering full rebuild');
+      // Keep the current published list as-is; do not reduce count
+      buildFinal();
     }
   }, [buildFinal, primary, backup]);
 
@@ -346,7 +464,7 @@ export function CatalogProvider({ children }) {
     if (saved && saved.items && Array.isArray(saved.items) && saved.items.length === 30) {
       setVideos(saved.items);
       setReady(true);
-      // Background verify without blocking UI
+      // Verify in background without disrupting UI
       verifyAndRepair();
     } else {
       buildFinal();
@@ -355,17 +473,21 @@ export function CatalogProvider({ children }) {
   }, []);
 
   // PUBLIC_INTERFACE
-  const replaceWithBackup = useCallback(async (youtubeId) => {
-    // Mark advisory thumb failure so we do not retry thumbnails for this id
-    try { localStorage.setItem(`sv:thumbfail:${youtubeId}`, '1'); } catch {}
+  const replaceWithBackup = useCallback((youtubeId) => {
+    if (!youtubeId) return;
+    // Advisory mark to avoid re-trying thumbnails on this id
+    try {
+      localStorage.setItem(KEYS.thumbFail(youtubeId), '1');
+    } catch {}
 
-    setVideos(async (prev) => {
-      const current = Array.isArray(prev) ? prev.slice() : [];
-      const idx = current.findIndex((v) => v.youtubeId === youtubeId);
-      if (idx < 0) return prev;
+    // Compute and apply replacement asynchronously without ever reducing list size
+    (async () => {
+      const current = Array.isArray(videosRef.current) ? videosRef.current.slice() : [];
+      const idx = current.findIndex((v) => v.youtubeId === youtubeId || v.id === youtubeId);
+      if (idx < 0) return;
 
       const usedIds = new Set(current.map((i) => i.youtubeId));
-      // Find a replacement from backup first
+
       const pick = async () => {
         for (const pool of [backup, primary]) {
           for (const cand of pool) {
@@ -376,7 +498,7 @@ export function CatalogProvider({ children }) {
               // eslint-disable-next-line no-await-in-loop
               ok = await preflightOEmbed(cand.youtubeId);
             }
-            if (ok === true) {
+            if (ok !== false) {
               return { ...cand, embed_ok: true };
             }
           }
@@ -385,7 +507,10 @@ export function CatalogProvider({ children }) {
       };
 
       const replacement = await pick();
-      if (!replacement) return prev;
+      if (!replacement) {
+        dlog('replaceWithBackup: no viable replacement found; keeping current item', youtubeId);
+        return;
+      }
 
       current[idx] = replacement;
 
@@ -393,29 +518,39 @@ export function CatalogProvider({ children }) {
       if (idx < 7) {
         try {
           const top7 = current.slice(0, 7).map((i) => i.youtubeId);
-          writeJSON('sv:catalog:top7', top7);
+          writeJSON(KEYS.catalogTop7V2, top7);
         } catch {
           // ignore
         }
       }
 
-      persistCatalog(current);
-      return current;
-    });
+      // Publish and persist (30 items guaranteed)
+      if (current.length === 30) {
+        setVideos(current);
+        persistCatalog(current);
+        dlog('replaceWithBackup: replaced', youtubeId, '->', replacement.youtubeId);
+      }
+    })();
   }, [primary, backup]);
 
   const refreshCatalog = useCallback(() => {
-    // Clear saved catalog (leave oembed cache intact) and rebuild
-    try { localStorage.removeItem('sv:catalog:final'); } catch {}
+    // Clear saved catalog (leave oEmbed cache intact) and rebuild atomically
+    try {
+      localStorage.removeItem(KEYS.catalogFinalV2);
+    } catch {}
+    setReady(false);
     buildFinal();
   }, [buildFinal]);
 
-  const value = useMemo(() => ({
-    videos,
-    ready,
-    replaceWithBackup,
-    refreshCatalog,
-  }), [videos, ready, replaceWithBackup, refreshCatalog]);
+  const value = useMemo(
+    () => ({
+      videos,
+      ready,
+      replaceWithBackup,
+      refreshCatalog,
+    }),
+    [videos, ready, replaceWithBackup, refreshCatalog]
+  );
 
   return <CatalogContext.Provider value={value}>{children}</CatalogContext.Provider>;
 }

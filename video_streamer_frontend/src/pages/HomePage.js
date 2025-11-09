@@ -9,7 +9,7 @@ import { CatalogContext } from '../context/CatalogContext';
  */
 export default function HomePage() {
   const [query, setQuery] = useState('');
-  const { videos } = useContext(CatalogContext);
+  const { videos, ready } = useContext(CatalogContext);
 
   const filtered = useMemo(() => {
     const list = Array.isArray(videos) ? videos : [];
@@ -21,6 +21,28 @@ export default function HomePage() {
         (v.channel || '').toLowerCase().includes(q)
     );
   }, [query, videos]);
+
+  const renderSkeletonGrid = () => {
+    const placeholders = Array.from({ length: 30 });
+    return (
+      <div className="grid" role="list" aria-busy="true" aria-live="polite">
+        {placeholders.map((_, i) => (
+          <div key={`skeleton-${i}`} role="listitem" className="card">
+            <div className="thumb" aria-label="Loading thumbnail">
+              <div className="skeleton" aria-hidden />
+            </div>
+            <div className="meta" style={{ marginTop: 8 }}>
+              <div className="avatar" aria-hidden />
+              <div>
+                <div className="title" style={{ background: 'rgba(0,0,0,0.05)', height: 16, borderRadius: 6, marginBottom: 8 }} />
+                <div className="sub" style={{ background: 'rgba(0,0,0,0.05)', height: 12, borderRadius: 6, width: '70%' }} />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  };
 
   return (
     <div className="container">
@@ -40,7 +62,7 @@ export default function HomePage() {
           }}
         />
       </div>
-      <VideoGrid items={filtered} />
+      {!ready ? renderSkeletonGrid() : <VideoGrid items={filtered} />}
     </div>
   );
 }
