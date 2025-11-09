@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useEffect, useMemo, useState } from 'react';
+import React, { createContext, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 /**
  * PUBLIC_INTERFACE
@@ -7,6 +7,9 @@ import React, { createContext, useCallback, useEffect, useMemo, useState } from 
  * - showMini: boolean controlling mini-player dock visibility
  * - setShowMini: setter to toggle mini-player
  * - toggleAutoplay: function to toggle autoplay and persist
+ * - mainVideoRef: React ref to the active HTMLVideoElement (for MP4 sources)
+ * - playing: boolean reflecting current play/pause of active video (MP4 only)
+ * - setPlaying: setter used by VideoPlayer to update playing state
  */
 // PUBLIC_INTERFACE
 export const PlayerContext = createContext({
@@ -14,6 +17,9 @@ export const PlayerContext = createContext({
   toggleAutoplay: () => {},
   showMini: false,
   setShowMini: (_v) => {},
+  mainVideoRef: { current: null },
+  playing: false,
+  setPlaying: (_v) => {},
 });
 
 /**
@@ -23,6 +29,9 @@ export const PlayerContext = createContext({
 export function PlayerProvider({ children }) {
   const [autoplay, setAutoplay] = useState(true);
   const [showMini, setShowMini] = useState(false);
+  const [playing, setPlaying] = useState(false);
+  // Single shared ref to the active native video element (used by VideoPlayer)
+  const mainVideoRef = useRef(null);
 
   // Initialize from localStorage
   useEffect(() => {
@@ -52,8 +61,8 @@ export function PlayerProvider({ children }) {
   }, []);
 
   const value = useMemo(
-    () => ({ autoplay, toggleAutoplay, showMini, setShowMini }),
-    [autoplay, toggleAutoplay, showMini]
+    () => ({ autoplay, toggleAutoplay, showMini, setShowMini, mainVideoRef, playing, setPlaying }),
+    [autoplay, toggleAutoplay, showMini, playing]
   );
 
   return <PlayerContext.Provider value={value}>{children}</PlayerContext.Provider>;

@@ -17,7 +17,7 @@ export default function VideoPlayer({ video, onEnded, onIntersectChange, nextVid
   const containerRef = useRef(null);
   const [pipSupported, setPipSupported] = useState(false);
   const [pipStatus, setPipStatus] = useState('');
-  const { autoplay, toggleAutoplay, setShowMini } = useContext(PlayerContext);
+  const { autoplay, toggleAutoplay, setShowMini, mainVideoRef, setPlaying } = useContext(PlayerContext);
 
   // countdown state for autoplay
   const [countdown, setCountdown] = useState(null); // number or null
@@ -164,40 +164,62 @@ export default function VideoPlayer({ video, onEnded, onIntersectChange, nextVid
     if (onEnded) onEnded({ type: 'playnow' });
   };
 
-  // Attempt autoplay for MP4 on mount/src change
+  // Attempt autoplay for MP4 on mount/src change and bind shared ref/state
   useEffect(() => {
-    if (video.sourceType !== 'mp4') return;
+    if (video.sourceType !== 'mp4') {
+      // For embeds, clear shared ref and playing state
+      if (mainVideoRef) mainVideoRef.current = null;
+      setPlaying(false);
+      return;
+    }
     const el = videoRef.current;
     if (!el) return;
 
-    // Show poster frame until playback starts; rely on browser control rendering
+    // Expose this element to MiniPlayer via context (single element strategy)
+    if (mainVideoRef) {
+      mainVideoRef.current = el;
+    }
+
+    const onPlay = () => { setIsPlaying(true); setPlaying(true); };
+    const onPause = () => { setIsPlaying(false); setPlaying(false); };
+    el.addEventListener('play', onPlay);
+    el.addEventListener('pause', onPause);
+
+    // robust autoplay attempt
     const tryPlay = async () => {
       try {
         if (!autoplayWanted) return;
-        // Important: do not set muted forcefully; attempt normal playback, if blocked show prompt
         const p = el.play();
         if (p && typeof p.then === 'function') {
           await p;
         }
         setIsPlaying(true);
+        setPlaying(true);
         setAutoplayBlocked(false);
       } catch {
-        // Blocked by autoplay policy
+        // If blocked, expose small inline prompt; do not force mute automatically
         setIsPlaying(false);
+        setPlaying(false);
         setAutoplayBlocked(true);
       }
     };
 
     // Reset states and try
     setIsPlaying(false);
+    setPlaying(false);
     setAutoplayBlocked(false);
+    let to = null;
     if (shouldAutoplay) {
-      // Wait a tick to ensure element is in DOM
-      const t = setTimeout(tryPlay, 50);
-      return () => clearTimeout(t);
+      to = setTimeout(tryPlay, 50);
     }
-    return undefined;
-  }, [video?.url, video?.id, video?.sourceType, shouldAutoplay, autoplayWanted]);
+
+    return () => {
+      if (to) clearTimeout(to);
+      el.removeEventListener('play', onPlay);
+      el.removeEventListener('pause', onPause);
+      // Do not null shared ref here if still same component; leave as is
+    };
+  }, [video?.url, video?.id, video?.sourceType, shouldAutoplay, autoplayWanted, mainVideoRef, setPlaying]);
 
   // Attempt autoplay for embeds by toggling src with autoplay param; also prepare a manual prompt
   useEffect(() => {
@@ -237,20 +259,20 @@ export default function VideoPlayer({ video, onEnded, onIntersectChange, nextVid
     }
   };
 
-  // Track play/pause for native video to update isPlaying
+  // Track play/pause for native video to update isPlaying and context.playing
   useEffect(() => {
     if (video.sourceType !== 'mp4') return;
     const el = videoRef.current;
     if (!el) return;
-    const onPlay = () => setIsPlaying(true);
-    const onPause = () => setIsPlaying(false);
+    const onPlay = () => { setIsPlaying(true); setPlaying(true); };
+    const onPause = () => { setIsPlaying(false); setPlaying(false); };
     el.addEventListener('play', onPlay);
     el.addEventListener('pause', onPause);
     return () => {
       el.removeEventListener('play', onPlay);
       el.removeEventListener('pause', onPause);
     };
-  }, [video?.id, video?.sourceType]);
+  }, [video?.id, video?.sourceType, setPlaying]);
 
   return (
     <div className="player-wrap" ref={containerRef}>

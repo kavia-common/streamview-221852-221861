@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, { useContext, useRef } from 'react';
 import { PlayerContext } from '../context/PlayerContext';
 
 /**
@@ -8,52 +8,37 @@ import { PlayerContext } from '../context/PlayerContext';
  * - video: current video object
  * - onClick: called when user clicks body to scroll/focus back to main player
  * - onClose: called when user closes mini player (will hide until main player is back in view)
- * - onPlayPause: optional handler to toggle play/pause for mp4
  * - isMp4: boolean if current is mp4
- * - mainVideoEl: optional ref to main video for play/pause sync
  */
-export default function MiniPlayer({ video, onClick, onClose, isMp4 = false, mainVideoEl }) {
-  const { showMini } = useContext(PlayerContext);
+export default function MiniPlayer({ video, onClick, onClose, isMp4 = false }) {
+  const { showMini, mainVideoRef, playing } = useContext(PlayerContext);
   const miniRef = useRef(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-
-  // Attempt to mirror play state for mp4 by listening to main element (if provided)
-  useEffect(() => {
-    if (!mainVideoEl?.current) return;
-    const el = mainVideoEl.current;
-    const onPlay = () => setIsPlaying(true);
-    const onPause = () => setIsPlaying(false);
-    el.addEventListener('play', onPlay);
-    el.addEventListener('pause', onPause);
-    return () => {
-      el.removeEventListener('play', onPlay);
-      el.removeEventListener('pause', onPause);
-    };
-  }, [mainVideoEl]);
 
   const togglePlay = async (e) => {
     e.stopPropagation();
-    if (!mainVideoEl?.current) return;
+    const el = mainVideoRef?.current;
+    if (!el) return;
     try {
-      if (mainVideoEl.current.paused) {
-        await mainVideoEl.current.play();
+      if (el.paused) {
+        // Attempt to play; if blocked, no-op (main overlay handles prompts)
+        await el.play();
       } else {
-        mainVideoEl.current.pause();
+        el.pause();
       }
     } catch {
-      // ignore
+      // ignore; user can press Play on main or overlay
     }
   };
 
   const handlePip = async (e) => {
     e.stopPropagation();
-    // For mp4 try PiP on main element, for iframes fallback message
     try {
-      if (isMp4 && mainVideoEl?.current) {
+      const el = mainVideoRef?.current;
+      if (isMp4 && el) {
         if (document.pictureInPictureElement) {
           await document.exitPictureInPicture();
         } else {
-          await mainVideoEl.current.requestPictureInPicture();
+          await el.requestPictureInPicture();
         }
       } else {
         alert('PiP is controlled by the embedded provider; use the player’s own PiP button if visible.');
@@ -76,14 +61,14 @@ export default function MiniPlayer({ video, onClick, onClose, isMp4 = false, mai
       onKeyDown={(e) => e.key === 'Enter' && onClick()}
     >
       <div className="mini-video">
-        {/* visual placeholder; actual playback remains in main element */}
+        {/* Single-element strategy: no secondary video, just controls mirroring the main element */}
         <div className="mini-overlay">
           <div className="mini-title" title={video?.title}>{video?.title}</div>
           <div className="mini-controls">
             <button className="mini-btn" onClick={togglePlay} aria-label="Play/Pause">
-              {isPlaying ? '❚❚' : '▶'}
+              {playing ? '❚❚' : '▶'}
             </button>
-            <button className="mini-btn" onClick={handlePip} aria-label="Picture-in-Picture">⤢</button>
+            <button className="mini-btn" onClick={handlePip} aria-label="Picture-in-Picture" disabled={!isMp4}>⤢</button>
             <button
               className="mini-btn close"
               onClick={(e) => {

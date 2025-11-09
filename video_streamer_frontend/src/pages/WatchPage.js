@@ -1,4 +1,4 @@
-import React, { useContext, useMemo, useRef } from 'react';
+import React, { useContext, useMemo } from 'react';
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import VideoPlayer from '../components/VideoPlayer';
 import { getVideoById, videos } from '../data/videos';
@@ -20,7 +20,6 @@ export default function WatchPage() {
   const location = useLocation();
   const { setShowMini } = useContext(PlayerContext);
   const video = getVideoById(id);
-  const mainVideoRef = useRef(null); // pass through to MiniPlayer for play/pause control (mp4 only)
 
   // Compute playlist and next/prev indices
   const { ordered, currentIndex, nextItem } = useMemo(() => {
@@ -76,9 +75,28 @@ export default function WatchPage() {
 
   return (
     <div className="container">
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+        <button
+          className="btn-secondary back-btn"
+          onClick={() => {
+            // Navigate back if possible, else go home
+            if (window.history.length > 1) {
+              navigate(-1);
+            } else {
+              navigate('/');
+            }
+          }}
+          aria-label="Go back"
+        >
+          ← Back
+        </button>
+        <div className="sub" aria-hidden style={{ marginLeft: 4 }}>
+          {video.title}
+        </div>
+      </div>
+
       <div className="watch-layout">
         <div>
-          {/* Attach ref for mp4 access via prop injection by cloning in VideoPlayer not implemented; use data-attr to query later if needed */}
           <VideoPlayer {...playerProps} />
           <div className="section">
             <h2 style={{ margin: '4px 0 8px 0' }}>{video.title}</h2>
@@ -104,7 +122,6 @@ export default function WatchPage() {
       <MiniPlayer
         video={video}
         isMp4={video.sourceType === 'mp4'}
-        mainVideoEl={mainVideoRef /* currently unused due to VideoPlayer encapsulation */}
         onClick={() => {
           // Scroll to top of the main player
           const el = document.querySelector('.player-wrap');
