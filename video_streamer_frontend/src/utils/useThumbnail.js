@@ -1,17 +1,20 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { buildYouTubeCandidates, extractYouTubeId } from './thumbnails';
+import { extractYouTubeId } from './thumbnails';
 
 /**
  * PUBLIC_INTERFACE
- * useThumbnail(video, options): Resolve the best thumbnail URL with robust fallback and caching.
- * - Preflight check (HEAD or lightweight fetch) before attempting to render
- * - Per-video override respected first
- * - LocalStorage memoization with 7-day TTL (sv:thumb:<id>)
- * - Avoids spinner loops; skeleton hides within ~600ms by timing out to best candidate
+ * useThumbnail(video, options): Resolve the best thumbnail URL with strict pinned choices and caching.
+ * - Uses explicit video.thumbnail first, then video.altThumbnail immediately on error
+ * - If both pinned URLs fail, calls options.onThumbnailsExhausted (if provided) to trigger runtime replacement
+ * - LocalStorage memoization with 7-day TTL (sv:thumb:<id>) for successful pinned URL only
  * - Returns handlers and explicit width/height hints
  */
 export function useThumbnail(video, options = {}) {
-  const { fallback = '/assets/thumbnail-fallback.jpg', timeoutMs = 600 } = options;
+  const {
+    fallback = '/assets/thumbnail-fallback.jpg',
+    timeoutMs = 600,
+    onThumbnailsExhausted,
+  } = options;
   const [resolved, setResolved] = useState(null);
   const [loaded, setLoaded] = useState(false);
   const [isResolving, setIsResolving] = useState(true);
@@ -24,32 +27,17 @@ export function useThumbnail(video, options = {}) {
     return id ? String(id) : null;
   }, [video && (video.id || video.youtubeId || video.url)]);
 
-  const initialCandidates = useMemo(() => {
-    if (!video) return [fallback];
-
-    // If a thumbnail is explicitly provided, use it immediately and bypass further cascading.
-    if (video && typeof video.thumbnail === 'string' && video.thumbnail.trim().length > 0) {
-      return [video.thumbnail, fallback];
+  const pinnedCandidates = useMemo(() => {
+    if (!video) return [];
+    const list = [];
+    if (typeof video.thumbnail === 'string' && video.thumbnail.trim().length > 0) {
+      list.push(video.thumbnail.trim());
     }
-
-    const candidates = [];
-
-    if (video.sourceType === 'youtube') {
-      const ytId = video.youtubeId || video.videoId || extractYouTubeId(video.url);
-      const ordered = [
-        // Prefer sd/hq for reliability; avoid maxres first
-        `https://i.ytimg.com/vi/${ytId}/sddefault.jpg`,
-        `https://i.ytimg.com/vi/${ytId}/hqdefault.jpg`,
-        `https://i.ytimg.com/vi/${ytId}/mqdefault.jpg`,
-        `https://i.ytimg.com/vi/${ytId}/default.jpg`,
-      ];
-      candidates.push(...ordered);
+    if (typeof video.altThumbnail === 'string' && video.altThumbnail.trim().length > 0) {
+      list.push(video.altThumbnail.trim());
     }
-
-    const unique = Array.from(new Set(candidates.filter(Boolean)));
-    unique.push(fallback);
-    return unique;
-  }, [video, fallback]);
+    return Array.from(new Set(list));
+  }, [video]);
 
   // Storage helpers
   const readCache = () => {
@@ -71,6 +59,8 @@ export function useThumbnail(video, options = {}) {
   const writeCache = (url) => {
     if (!videoKey) return;
     try {
+      // Only cache success for pinned URLs (ignore fallback placeholder)
+      if (!pinnedCandidates.includes(url)) return;
       const ttl = 7 * 24 * 60 * 60 * 1000; // 7 days
       const exp = Date.now() + ttl;
       localStorage.setItem(`sv:thumb:${videoKey}`, JSON.stringify({ url, exp }));
@@ -79,10 +69,9 @@ export function useThumbnail(video, options = {}) {
     }
   };
 
-  // Preflight check: prefer HEAD; fallback to fetch GET with no-cors
+  // Preflight check: quick image dimension check via HTMLImage; avoids CORS noise
   const preflight = async (url) => {
     if (!url) return false;
-    // Quick image dimension check via HTMLImage for final guard
     const quickImageSize = () =>
       new Promise((resolve) => {
         const img = new Image();
@@ -96,20 +85,17 @@ export function useThumbnail(video, options = {}) {
         img.onerror = () => resolve(false);
         img.src = url;
       });
+    const okDim = await quickImageSize();
+    return okDim;
+  };
 
+  const handleExhausted = () => {
     try {
-      // Try HEAD first, but many CDNs block HEAD; ignore errors
-      const controller = new AbortController();
-      const t = setTimeout(() => controller.abort(), 350);
-      const res = await fetch(url, { method: 'HEAD', mode: 'no-cors', cache: 'force-cache', signal: controller.signal });
-      clearTimeout(t);
-      // With no-cors, status might be 0; proceed to quick image check to be certain
-      const okDim = await quickImageSize();
-      return okDim;
+      if (typeof onThumbnailsExhausted === 'function') {
+        onThumbnailsExhausted(video);
+      }
     } catch {
-      // Fallback to quick image check directly
-      const okDim = await quickImageSize();
-      return okDim;
+      // ignore callback errors
     }
   };
 
@@ -119,7 +105,6 @@ export function useThumbnail(video, options = {}) {
     setIsResolving(true);
     setLoaded(false);
 
-    // Immediate cache hit
     const cached = readCache();
     if (cached) {
       setResolved(cached);
@@ -127,22 +112,21 @@ export function useThumbnail(video, options = {}) {
       return () => {};
     }
 
-    // Start a safety timeout to ensure skeleton ends quickly
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => {
       if (cancelled) return;
-      // Use the best first candidate (usually sd/hq) as a fallback if still resolving
-      const best = initialCandidates.find(Boolean) || fallback;
+      // If still resolving, use the first pinned candidate as a temporary visual
+      const best = pinnedCandidates.find(Boolean) || fallback;
       setResolved(best);
       setIsResolving(false);
     }, timeoutMs);
 
     async function run() {
-      for (const url of initialCandidates) {
+      // Try pinned explicit urls only (thumbnail then alt)
+      for (const url of pinnedCandidates) {
         if (cancelled) return;
         if (!url || triedRef.current.has(url)) continue;
         triedRef.current.add(url);
-
         const ok = await preflight(url);
         if (cancelled) return;
         if (ok) {
@@ -156,9 +140,11 @@ export function useThumbnail(video, options = {}) {
           return;
         }
       }
+      // Both pinned failed - let the catalog know to replace item, then use fallback for now
       if (!cancelled) {
         setResolved(fallback);
         setIsResolving(false);
+        handleExhausted();
         if (timerRef.current) {
           clearTimeout(timerRef.current);
           timerRef.current = null;
@@ -175,11 +161,11 @@ export function useThumbnail(video, options = {}) {
         timerRef.current = null;
       }
     };
-  }, [initialCandidates, videoKey, fallback, timeoutMs]);
+  }, [pinnedCandidates, videoKey, fallback, timeoutMs]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // onError/onLoad for <img> element
   const onError = async () => {
-    const remaining = initialCandidates.filter((u) => !triedRef.current.has(u));
+    const remaining = pinnedCandidates.filter((u) => !triedRef.current.has(u));
     for (const url of remaining) {
       const ok = await preflight(url);
       if (ok) {
@@ -189,6 +175,8 @@ export function useThumbnail(video, options = {}) {
       }
       triedRef.current.add(url);
     }
+    // both pinned failed -> notify and fallback
+    handleExhausted();
     setResolved(fallback);
   };
 

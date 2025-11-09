@@ -1,20 +1,25 @@
-import React, { useEffect } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useThumbnail } from '../utils/useThumbnail';
+import { CatalogContext } from '../context/CatalogContext';
 
 /**
  * PUBLIC_INTERFACE
  * VideoCard displays a video's thumbnail, title and meta; clicking navigates to watch page.
  * - Mobile-first responsive card with hover/press animations
- * - Thumbnails lazy-load with async decoding and robust cascade
+ * - Thumbnails lazy-load with async decoding and strict two-pinned fallback
+ * - If both thumbnails fail, CatalogProvider replaces the item from backup at runtime
  * - Accessibility: alt text and keyboard navigation
  */
 export default function VideoCard({ video, compact = false }) {
   const navigate = useNavigate();
+  const { replaceWithBackup } = useContext(CatalogContext);
+
   const onClick = () => navigate(`/watch/${video.id}?autoplay=1`, { state: { autoplay: true } });
 
   const { url, loaded, isResolving, onError, onLoad } = useThumbnail(video, {
     fallback: '/assets/thumbnail-fallback.jpg',
+    onThumbnailsExhausted: () => replaceWithBackup(video?.youtubeId || video?.id),
   });
 
   useEffect(() => {

@@ -4,14 +4,17 @@ import { BrowserRouter } from 'react-router-dom';
 import './index.css';
 import App from './App';
 import { PlayerProvider } from './context/PlayerContext';
+import { CatalogProvider } from './context/CatalogContext';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
     <BrowserRouter>
-      <PlayerProvider>
-        <App />
-      </PlayerProvider>
+      <CatalogProvider>
+        <PlayerProvider>
+          <App />
+        </PlayerProvider>
+      </CatalogProvider>
     </BrowserRouter>
   </React.StrictMode>
 );

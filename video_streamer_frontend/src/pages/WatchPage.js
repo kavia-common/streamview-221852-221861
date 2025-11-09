@@ -1,77 +1,24 @@
-import React, { useContext, useEffect, useMemo, useState } from 'react';
+import React, { useContext, useMemo } from 'react';
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import VideoPlayer from '../components/VideoPlayer';
-import videosRaw from '../data/videos';
 import VideoCard from '../components/VideoCard';
 import MiniPlayer from '../components/MiniPlayer';
 import { PlayerContext } from '../context/PlayerContext';
+import { CatalogContext } from '../context/CatalogContext';
 
 /**
  * PUBLIC_INTERFACE
  * WatchPage renders the selected video, metadata, and a related list.
- * - Computes the ordered playlist from the curated set and current index
- * - Handles autoplay-next navigation with a countdown overlay via VideoPlayer
- * - Shows a scroll-docked mini-player when the main player leaves the viewport
- * - Mobile-first: player and related list stack; mini-player docks on small screens
+ * Uses CatalogContext to ensure items are embed_ok and persisted.
  */
 export default function WatchPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
   const { setShowMini } = useContext(PlayerContext);
-  const [embedOkMap, setEmbedOkMap] = useState({});
+  const { videos } = useContext(CatalogContext);
 
-  const readEmbedCache = (vid) => {
-    try {
-      const raw = localStorage.getItem(`sv:oembed:${vid}`);
-      if (!raw) return null;
-      const obj = JSON.parse(raw);
-      if (!obj || !obj.ok || !obj.exp) return null;
-      if (Date.now() > obj.exp) {
-        localStorage.removeItem(`sv:oembed:${vid}`);
-        return null;
-      }
-      return obj.ok === true;
-    } catch {
-      return null;
-    }
-  };
-
-  // Normalize dataset
-  const normalized = useMemo(() => {
-    if (!Array.isArray(videosRaw)) return [];
-    return videosRaw.map((v, idx) => ({
-      id: v.youtubeId || String(idx),
-      title: v.title,
-      sourceType: 'youtube',
-      url: v.youtubeId ? `https://www.youtube.com/watch?v=${v.youtubeId}` : undefined,
-      youtubeId: v.youtubeId,
-      channel: v.channel || 'Official Channel',
-      views: v.views || '',
-      uploadedAt: v.uploadedAt || '',
-      duration: v.duration || '',
-      description: v.description || '',
-      thumbnail: v.thumbnail,
-      embeddable: v.embeddable === true,
-    }));
-  }, []);
-
-  // Preflight availability (re-use cache values written from Home, or probe here if missing)
-  useEffect(() => {
-    const map = {};
-    for (const v of normalized) {
-      const res = readEmbedCache(v.youtubeId);
-      if (res !== null) map[v.youtubeId] = res;
-    }
-    setEmbedOkMap(map);
-  }, [normalized]);
-
-  // Filter embeddable items for list and related
-  const list = useMemo(() => {
-    return normalized.filter((v) => v.sourceType === 'youtube' && v.embeddable !== false)
-      .filter((v) => embedOkMap[v.youtubeId] !== false);
-  }, [normalized, embedOkMap]);
-
+  const list = Array.isArray(videos) ? videos : [];
   const video = useMemo(() => list.find((v) => v.id === id) || null, [list, id]);
 
   const { nextItem } = useMemo(() => {
