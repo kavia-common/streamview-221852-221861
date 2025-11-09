@@ -12,7 +12,7 @@ import { PlayerContext } from '../context/PlayerContext';
  * - onIntersectChange: optional callback(boolean) called when main player visibility changes via IntersectionObserver.
  * - nextVideo: optional video object for next up (used for overlay preview/title).
  */
-export default function VideoPlayer({ video, onEnded, onIntersectChange, nextVideo }) {
+export default function VideoPlayer({ video, onEnded, onIntersectChange, nextVideo, shouldAutoplay = false }) {
   const videoRef = useRef(null);
   const containerRef = useRef(null);
   const [pipSupported, setPipSupported] = useState(false);
@@ -24,17 +24,25 @@ export default function VideoPlayer({ video, onEnded, onIntersectChange, nextVid
   const [countdownActive, setCountdownActive] = useState(false);
   const COUNTDOWN_SECS = 3;
 
+  // autoplay UX state
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [autoplayWanted, setAutoplayWanted] = useState(!!shouldAutoplay);
+  const [autoplayBlocked, setAutoplayBlocked] = useState(false);
+
   useEffect(() => {
     // Detect PiP support for MP4
     const el = document.createElement('video');
     setPipSupported('requestPictureInPicture' in el);
   }, []);
 
-  // Reset countdown when video changes
+  // Reset countdown and autoplay flags when video changes
   useEffect(() => {
     setCountdown(null);
     setCountdownActive(false);
-  }, [video?.id]);
+    setIsPlaying(false);
+    setAutoplayBlocked(false);
+    setAutoplayWanted(!!shouldAutoplay);
+  }, [video?.id, shouldAutoplay]);
 
   // Setup IntersectionObserver to detect when player scrolls out of view
   useEffect(() => {
@@ -58,8 +66,15 @@ export default function VideoPlayer({ video, onEnded, onIntersectChange, nextVid
         video.url.match(/(?:v=|\.be\/)([A-Za-z0-9_-]{6,})/) ||
         video.url.match(/youtube\.com\/shorts\/([A-Za-z0-9_-]{6,})/);
       const id = match ? match[1] : '';
+      // Add autoplay=1 but rely on policies; mute is often required. We do not force mute, we show prompt if blocked.
+      const params = new URLSearchParams({
+        rel: '0',
+        modestbranding: '1',
+        autoplay: autoplayWanted ? '1' : '0',
+        playsinline: '1',
+      });
       return {
-        src: `https://www.youtube.com/embed/${id}?rel=0&modestbranding=1`,
+        src: `https://www.youtube.com/embed/${id}?${params.toString()}`,
         allow:
           'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share',
       };
@@ -67,13 +82,20 @@ export default function VideoPlayer({ video, onEnded, onIntersectChange, nextVid
     if (video.sourceType === 'vimeo') {
       const match = video.url.match(/vimeo\.com\/(\d+)/);
       const id = match ? match[1] : '';
+      const params = new URLSearchParams({
+        autoplay: autoplayWanted ? '1' : '0',
+        title: '0',
+        byline: '0',
+        portrait: '0',
+        playsinline: '1',
+      });
       return {
-        src: `https://player.vimeo.com/video/${id}`,
+        src: `https://player.vimeo.com/video/${id}?${params.toString()}`,
         allow: 'autoplay; fullscreen; picture-in-picture',
       };
     }
     return null;
-  }, [video]);
+  }, [video, autoplayWanted]);
 
   const tryEnterPipForIframe = async () => {
     try {
@@ -142,6 +164,94 @@ export default function VideoPlayer({ video, onEnded, onIntersectChange, nextVid
     if (onEnded) onEnded({ type: 'playnow' });
   };
 
+  // Attempt autoplay for MP4 on mount/src change
+  useEffect(() => {
+    if (video.sourceType !== 'mp4') return;
+    const el = videoRef.current;
+    if (!el) return;
+
+    // Show poster frame until playback starts; rely on browser control rendering
+    const tryPlay = async () => {
+      try {
+        if (!autoplayWanted) return;
+        // Important: do not set muted forcefully; attempt normal playback, if blocked show prompt
+        const p = el.play();
+        if (p && typeof p.then === 'function') {
+          await p;
+        }
+        setIsPlaying(true);
+        setAutoplayBlocked(false);
+      } catch {
+        // Blocked by autoplay policy
+        setIsPlaying(false);
+        setAutoplayBlocked(true);
+      }
+    };
+
+    // Reset states and try
+    setIsPlaying(false);
+    setAutoplayBlocked(false);
+    if (shouldAutoplay) {
+      // Wait a tick to ensure element is in DOM
+      const t = setTimeout(tryPlay, 50);
+      return () => clearTimeout(t);
+    }
+    return undefined;
+  }, [video?.url, video?.id, video?.sourceType, shouldAutoplay, autoplayWanted]);
+
+  // Attempt autoplay for embeds by toggling src with autoplay param; also prepare a manual prompt
+  useEffect(() => {
+    if (video.sourceType === 'youtube' || video.sourceType === 'vimeo') {
+      // We rely on autoplay param in embed URL. If blocked, show manual prompt.
+      if (shouldAutoplay) {
+        // We cannot detect reliably if iframe started playing, so we optimistically do not show blocked state immediately.
+        // Show prompt after a short delay if user still hasn't interacted.
+        const t = setTimeout(() => {
+          // Show prompt if still autoplayWanted and not yet interacted
+          setAutoplayBlocked(true);
+        }, 1000);
+        return () => clearTimeout(t);
+      } else {
+        setAutoplayBlocked(false);
+      }
+    }
+    return undefined;
+  }, [video?.id, video?.sourceType, shouldAutoplay]);
+
+  const handleUserPlayGesture = () => {
+    // User clicked Play button to bypass autoplay block
+    setAutoplayBlocked(false);
+    setAutoplayWanted(false);
+    try {
+      if (video.sourceType === 'mp4' && videoRef.current) {
+        videoRef.current.play().catch(() => {});
+      } else if (video.sourceType === 'youtube' || video.sourceType === 'vimeo') {
+        // Reload iframe with autoplay=1 to ensure it starts after user gesture
+        setAutoplayWanted(true);
+        // Toggling state will rebuild embed src with autoplay=1 which should now be allowed due to gesture
+        // Force a micro re-render by briefly toggling and resetting
+        setTimeout(() => setAutoplayWanted(false), 0);
+      }
+    } catch {
+      // ignore
+    }
+  };
+
+  // Track play/pause for native video to update isPlaying
+  useEffect(() => {
+    if (video.sourceType !== 'mp4') return;
+    const el = videoRef.current;
+    if (!el) return;
+    const onPlay = () => setIsPlaying(true);
+    const onPause = () => setIsPlaying(false);
+    el.addEventListener('play', onPlay);
+    el.addEventListener('pause', onPause);
+    return () => {
+      el.removeEventListener('play', onPlay);
+      el.removeEventListener('pause', onPause);
+    };
+  }, [video?.id, video?.sourceType]);
+
   return (
     <div className="player-wrap" ref={containerRef}>
       <div className="player-area" aria-label="Video player area">
@@ -153,6 +263,7 @@ export default function VideoPlayer({ video, onEnded, onIntersectChange, nextVid
             preload="metadata"
             style={{ backgroundColor: 'black' }}
             onEnded={onMp4Ended}
+            // Keep poster/thumbnail visible until playback starts by relying on controls and preload behavior
           />
         ) : (
           <iframe
@@ -164,7 +275,22 @@ export default function VideoPlayer({ video, onEnded, onIntersectChange, nextVid
           />
         )}
 
-        {/* Autoplay overlay */}
+        {/* Inline prompt when browser blocks autoplay */}
+        {shouldAutoplay && autoplayBlocked && (
+          <div className="autoplay-overlay" role="dialog" aria-live="polite">
+            <div className="autoplay-card">
+              <div className="autoplay-title">Autoplay blocked</div>
+              <div className="autoplay-next-title">
+                Tap Play to start watching
+              </div>
+              <div className="autoplay-cta">
+                <button className="btn-primary" onClick={handleUserPlayGesture} aria-label="Play video now">Play</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Autoplay next overlay */}
         {autoplay && (countdownActive || countdown !== null) && nextVideo && (
           <div className="autoplay-overlay" role="dialog" aria-live="polite">
             <div className="autoplay-card">

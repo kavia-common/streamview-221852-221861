@@ -1,5 +1,5 @@
 import React, { useContext, useMemo, useRef } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import VideoPlayer from '../components/VideoPlayer';
 import { getVideoById, videos } from '../data/videos';
 import VideoCard from '../components/VideoCard';
@@ -17,6 +17,7 @@ import { PlayerContext } from '../context/PlayerContext';
 export default function WatchPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { setShowMini } = useContext(PlayerContext);
   const video = getVideoById(id);
   const mainVideoRef = useRef(null); // pass through to MiniPlayer for play/pause control (mp4 only)
@@ -56,12 +57,21 @@ export default function WatchPage() {
     if (isVisible) setShowMini(false);
   };
 
+  // Determine initial autoplay intent from route state or query param
+  const shouldAutoplay = (() => {
+    const stateFlag = location?.state && (location.state.autoplay === true || location.state.autoplay === 1);
+    const searchParams = new URLSearchParams(location.search || '');
+    const queryFlag = ['1', 'true', 'yes'].includes((searchParams.get('autoplay') || '').toLowerCase());
+    return !!(stateFlag || queryFlag);
+  })();
+
   // Pass a ref to VideoPlayer's video element for mp4 to control from MiniPlayer
   const playerProps = {
     video,
     onEnded: handleEnded,
     onIntersectChange,
     nextVideo: nextItem || null,
+    shouldAutoplay,
   };
 
   return (

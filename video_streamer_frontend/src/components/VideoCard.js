@@ -8,7 +8,8 @@ import { useThumbnail } from '../utils/useThumbnail';
  */
 export default function VideoCard({ video, compact = false }) {
   const navigate = useNavigate();
-  const onClick = () => navigate(`/watch/${video.id}`);
+  // Always indicate autoplay intent when navigating from cards (Home or Related)
+  const onClick = () => navigate(`/watch/${video.id}?autoplay=1`, { state: { autoplay: true } });
 
   // Async thumbnail resolver with fallback (no blur-up)
   const { url, loaded, isResolving, onError, onLoad } = useThumbnail(video, {
